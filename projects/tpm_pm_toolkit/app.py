@@ -221,3 +221,122 @@ with goal3:
 st.divider()
 
 st.success("✅ App upgraded successfully. Next step: connect each module to a real AI workflow.")
+st.divider()
+
+st.markdown('<div class="section-title">🚦 Day 2: Launch Risk Analyzer</div>', unsafe_allow_html=True)
+
+st.write(
+    "Paste raw launch updates below. The analyzer will identify launch health, risks, blockers, "
+    "recommendations, and an executive summary."
+)
+
+launch_notes = st.text_area(
+    "Launch Notes",
+    height=220,
+    placeholder="Example: Telemetry is incomplete. Security review is pending. Connector testing is delayed by 2 weeks. P1 bugs are still open."
+)
+
+if st.button("Analyze Launch Risk"):
+    if not launch_notes.strip():
+        st.warning("Please enter launch notes first.")
+    else:
+        notes_lower = launch_notes.lower()
+
+        risks = []
+        blockers = []
+        recommendations = []
+
+        high_risk_keywords = [
+            "blocked", "security", "privacy", "delayed", "delay",
+            "missing", "not ready", "incomplete", "p0", "p1"
+        ]
+
+        medium_risk_keywords = [
+            "dependency", "risk", "pending", "review", "testing", "open"
+        ]
+
+        high_hits = [word for word in high_risk_keywords if word in notes_lower]
+        medium_hits = [word for word in medium_risk_keywords if word in notes_lower]
+
+        if high_hits:
+            health = "Red"
+        elif medium_hits:
+            health = "Yellow"
+        else:
+            health = "Green"
+
+        if "security" in notes_lower:
+            risks.append("Security review may block launch readiness.")
+            blockers.append("Security approval is not complete.")
+            recommendations.append("Escalate to the security review owner and confirm approval date.")
+
+        if "privacy" in notes_lower:
+            risks.append("Privacy review may block launch readiness.")
+            blockers.append("Privacy approval is not complete.")
+            recommendations.append("Confirm privacy review owner, SLA, and launch approval path.")
+
+        if "telemetry" in notes_lower or "metrics" in notes_lower:
+            risks.append("Telemetry or success metrics may be incomplete.")
+            recommendations.append("Prioritize launch-critical telemetry before launch review.")
+
+        if "delayed" in notes_lower or "delay" in notes_lower:
+            risks.append("Milestone delay may impact launch timeline.")
+            recommendations.append("Confirm revised ETA and evaluate scope reduction.")
+
+        if "testing" in notes_lower:
+            risks.append("Testing readiness may be incomplete.")
+            recommendations.append("Create test completion plan with owner and deadline.")
+
+        if "p0" in notes_lower or "p1" in notes_lower:
+            risks.append("Launch-critical bugs are still open.")
+            blockers.append("P0/P1 bugs need closure or explicit launch exception.")
+            recommendations.append("Review bug hotlist and define launch-blocking criteria.")
+
+        if "dependency" in notes_lower:
+            risks.append("Cross-team dependency may affect launch readiness.")
+            recommendations.append("Assign dependency owner and establish escalation path.")
+
+        if not risks:
+            risks.append("No major launch risks detected from the provided notes.")
+            recommendations.append("Continue monitoring milestones, owners, and launch criteria.")
+
+        st.subheader("Launch Health")
+
+        if health == "Red":
+            st.error("🔴 Red - High Risk")
+        elif health == "Yellow":
+            st.warning("🟡 Yellow - Medium Risk")
+        else:
+            st.success("🟢 Green - On Track")
+
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+            st.metric("Risks Found", len(risks))
+
+        with col2:
+            st.metric("Blockers Found", len(blockers))
+
+        with col3:
+            st.metric("Health", health)
+
+        st.subheader("Top Risks")
+        for risk in risks:
+            st.write(f"- {risk}")
+
+        st.subheader("Blockers")
+        if blockers:
+            for blocker in blockers:
+                st.write(f"- {blocker}")
+        else:
+            st.write("- No hard blockers detected.")
+
+        st.subheader("Recommendations")
+        for recommendation in recommendations:
+            st.write(f"- {recommendation}")
+
+        st.subheader("Executive Summary")
+        st.info(
+            f"Launch health is currently **{health}** based on the provided updates. "
+            "The main focus areas are risk mitigation, owner clarity, and launch-readiness validation."
+        )
