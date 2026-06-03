@@ -1,118 +1,57 @@
-# 🚀 TPM/PM AI Toolkit
+# 🚀 AI TPM Copilot
 
-AI-powered TPM and Product Management toolkit built through a 14-Day Vibe Coding Challenge.
+A 14-day advanced vibe coding capstone project for building an AI-powered TPM/Product Management copilot.
 
-## Overview
+## What This Project Is
 
-This project documents my journey learning modern AI-assisted software development ("vibe coding") while building practical tools that Technical Program Managers (TPMs) and Product Managers (PMs) use every day.
+This repository documents my journey building an AI TPM Copilot using AI-assisted development.
 
-The goal is not simply to generate code with AI, but to learn how to:
+The goal is to build a practical portfolio project that demonstrates:
 
-* Translate business requirements into software
-* Build AI-powered internal tools
-* Create agentic workflows
-* Apply product thinking to software development
-* Use GitHub and modern development workflows
-* Develop a portfolio of real TPM/PM applications
+- TPM and PM workflow automation
+- Launch risk analysis
+- Executive reporting
+- Skills
+- Agents
+- RAG
+- Evaluation
+- MCP/tool integration
+- Modern vibe coding practices
 
----
+## Current Status
 
-## Challenge Goals
-
-By the end of 14 days, this toolkit will include:
-
-* 📊 Launch Readiness Dashboard
-* 🐞 Bug Triage Assistant
-* 📝 PRD Builder
-* 📣 Status Report Generator
-* 💬 Customer Feedback Analyzer
-* 🔗 Dependency Tracker
-* 🤖 AI Agent Workflows
-
----
-
-## Current Progress
-
-### Day 1 ✅
-
-Completed:
-
-* GitHub repository setup
-* Local development environment
-* Python virtual environment
-* Streamlit setup
-* First TPM/PM dashboard application
-* Git workflow (commit & push)
-
-Built:
-
-* TPM/PM AI Toolkit Homepage
-* Executive dashboard layout
-* Progress tracker
-* Tool navigation cards
-
----
-
-## Technology Stack
-
-* Python
-* Streamlit
-* Git
-* GitHub
-* VS Code
-* AI Coding Assistants (ChatGPT, Claude, Copilot)
-
----
-
-## Why This Project Exists
-
-As AI changes how software is built, TPMs and PMs can increasingly move beyond writing requirements and begin creating working solutions directly.
-
-This project explores how AI-assisted development can help program and product leaders:
-
-* Prototype ideas faster
-* Automate repetitive workflows
-* Improve decision-making
-* Build operational tooling
-* Increase productivity
-
----
-
-## Learning Journal
-
-### Key Lesson – Day 1
-
-The most important insight from Day 1:
-
-> AI can generate implementation, but humans still define the problem, evaluate the solution, and make product decisions.
-
----
-
-## Next Milestone
-
-Build a RICE Prioritization Tool that allows PMs to score opportunities using:
-
-RICE = (Reach × Impact × Confidence) / Effort
-
----
+| Day | Capability | Status |
+|---|---|---|
+| Day 1 | TPM/PM Toolkit Homepage | ✅ Complete |
+| Day 2 | Launch Risk Analyzer | 🚧 In Progress |
+| Day 3 | Launch Risk Skill | ☐ Planned |
+| Day 4 | PRD Builder Skill | ☐ Planned |
+| Day 5 | Bug Triage Agent | ☐ Planned |
+| Day 6 | Agent Workflow | ☐ Planned |
+| Day 7 | Status Report Skill | ☐ Planned |
+| Day 8 | Knowledge Base / RAG | ☐ Planned |
+| Day 9 | Feedback Agent | ☐ Planned |
+| Day 10 | Dependency Agent | ☐ Planned |
+| Day 11 | Evaluation Framework | ☐ Planned |
+| Day 12 | Multi-Agent System | ☐ Planned |
+| Day 13 | MCP Integration | ☐ Planned |
+| Day 14 | Executive TPM Copilot | ☐ Planned |
 
 ## Repository Structure
 
 ```text
 pm-tpm-ai-tools/
+├── README.md
+├── challenge/
+│   └── 14_day_plan.md
+├── lessons_learned/
+│   ├── day1_day2_lessons.md
+│   └── common_errors.md
 ├── projects/
 │   └── tpm_pm_toolkit/
-├── notes/
+│       └── app.py
 ├── demos/
-└── README.md
-```
-
----
-
-## Author
-
-Shweta Singh
-
-Principle Group Technical Program Manager | AI & Agentic Systems
-
-Building in public while learning advanced vibe coding.
+├── notes/
+├── LICENSE
+└── .gitignore
+Key Folders
