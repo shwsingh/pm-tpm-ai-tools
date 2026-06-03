@@ -1,57 +1,87 @@
 # 🚀 AI TPM Copilot
 
-A 14-day advanced vibe coding capstone project for building an AI-powered TPM/Product Management copilot.
+A 14-day advanced vibe coding challenge to build an AI-powered TPM/Product Management Copilot.
 
-## What This Project Is
+## Project Goal
 
-This repository documents my journey building an AI TPM Copilot using AI-assisted development.
+Build a portfolio-quality AI TPM Copilot capable of:
 
-The goal is to build a practical portfolio project that demonstrates:
+* Launch Risk Analysis
+* Bug Triage
+* Dependency Management
+* PRD Generation
+* Executive Reporting
+* Customer Feedback Analysis
+* Skills
+* Agents
+* RAG
+* Evaluation Frameworks
+* MCP Integrations
 
-- TPM and PM workflow automation
-- Launch risk analysis
-- Executive reporting
-- Skills
-- Agents
-- RAG
-- Evaluation
-- MCP/tool integration
-- Modern vibe coding practices
+## Progress
 
-## Current Status
+| Day    | Capability              | Status     |
+| ------ | ----------------------- | ---------- |
+| Day 1  | TPM/PM Toolkit Homepage | ✅ Complete |
+| Day 2  | Launch Risk Analyzer    | ✅ Complete |
+| Day 3  | Launch Risk Skill       | ☐ Planned  |
+| Day 4  | PRD Builder Skill       | ☐ Planned  |
+| Day 5  | Bug Triage Agent        | ☐ Planned  |
+| Day 6  | Agent Workflow          | ☐ Planned  |
+| Day 7  | Status Report Skill     | ☐ Planned  |
+| Day 8  | Knowledge Base / RAG    | ☐ Planned  |
+| Day 9  | Feedback Agent          | ☐ Planned  |
+| Day 10 | Dependency Agent        | ☐ Planned  |
+| Day 11 | Evaluation Framework    | ☐ Planned  |
+| Day 12 | Multi-Agent System      | ☐ Planned  |
+| Day 13 | MCP Integration         | ☐ Planned  |
+| Day 14 | Executive TPM Copilot   | ☐ Planned  |
 
-| Day | Capability | Status |
-|---|---|---|
-| Day 1 | TPM/PM Toolkit Homepage | ✅ Complete |
-| Day 2 | Launch Risk Analyzer | 🚧 In Progress |
-| Day 3 | Launch Risk Skill | ☐ Planned |
-| Day 4 | PRD Builder Skill | ☐ Planned |
-| Day 5 | Bug Triage Agent | ☐ Planned |
-| Day 6 | Agent Workflow | ☐ Planned |
-| Day 7 | Status Report Skill | ☐ Planned |
-| Day 8 | Knowledge Base / RAG | ☐ Planned |
-| Day 9 | Feedback Agent | ☐ Planned |
-| Day 10 | Dependency Agent | ☐ Planned |
-| Day 11 | Evaluation Framework | ☐ Planned |
-| Day 12 | Multi-Agent System | ☐ Planned |
-| Day 13 | MCP Integration | ☐ Planned |
-| Day 14 | Executive TPM Copilot | ☐ Planned |
+## Documentation
 
-## Repository Structure
+### Challenge Roadmap
 
-```text
-pm-tpm-ai-tools/
-├── README.md
-├── challenge/
-│   └── 14_day_plan.md
-├── lessons_learned/
-│   ├── day1_day2_lessons.md
-│   └── common_errors.md
-├── projects/
-│   └── tpm_pm_toolkit/
-│       └── app.py
-├── demos/
-├── notes/
-├── LICENSE
-└── .gitignore
-Key Folders
+See:
+
+challenge/14_day_plan.md
+
+### Lessons Learned
+
+See:
+
+lessons_learned/day1_day2_lessons.md
+
+### Common Errors & Fixes
+
+See:
+
+lessons_learned/common_errors.md
+
+## Current Application
+
+Location:
+
+projects/tpm_pm_toolkit/app.py
+
+Current Features:
+
+* TPM Dashboard Homepage
+* Launch Risk Analyzer
+* Risk Detection
+* Executive Summary
+* Launch Health Assessment
+
+## Tech Stack
+
+* Python
+* Streamlit
+* Git
+* GitHub
+* VS Code
+* AI Coding Assistants
+
+## Author
+
+Shweta Singh
+
+Building an AI TPM Copilot through a 14-day advanced vibe coding challenge.

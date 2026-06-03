@@ -1,10 +1,10 @@
 # Common Errors and Fixes
+# Common Errors
 
-| Error | Meaning | Fix |
+| Error | Root Cause | Fix |
 |---|---|---|
-| Import "streamlit" could not be resolved | VS Code/Pylance is using wrong interpreter | Select venv Python interpreter |
-| ModuleNotFoundError: No module named streamlit | Streamlit not installed in active environment | Activate venv and install Streamlit |
-| File does not exist: app.py | Running command from wrong folder | cd into projects/tpm_pm_toolkit |
-| zsh: command not found | Typed code into terminal | Put Python code inside app.py |
-| GitHub push rejected due to private email | Git commit used private email | Configure GitHub noreply email |
-| non-fast-forward push rejected | Local and remote branches diverged | Run git pull origin main --rebase |
+| Import streamlit could not be resolved | Wrong VS Code interpreter | Select venv interpreter |
+| app.py not found | Wrong folder | cd into project folder |
+| GitHub push rejected | Email privacy | Configure GitHub noreply email |
+| Typed code in terminal | Wrong context | Put code inside app.py |
+| Streamlit module not found | Wrong environment | Activate venv |
