@@ -1,6 +1,17 @@
+<div align="center">
+
 # 🚀 AI TPM Copilot
 
 A 14-day advanced vibe coding challenge to build an AI-powered TPM/Product Management Copilot.
+
+[![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Streamlit](https://img.shields.io/badge/Built%20with-Streamlit-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
+[![Progress](https://img.shields.io/badge/Progress-3%2F14-brightgreen)](#progress)
+
+</div>
+
+---
 
 ## Project Goal
 
@@ -17,6 +28,24 @@ Build a portfolio-quality AI TPM Copilot capable of:
 * RAG
 * Evaluation Frameworks
 * MCP Integrations
+
+## Quick Start
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/<your-username>/pm-tpm-ai-tools.git
+cd pm-tpm-ai-tools
+
+# 2. Create and activate a virtual environment
+python -m venv venv
+source venv/bin/activate        # On Windows: venv\Scripts\activate
+
+# 3. Install dependencies
+pip install streamlit
+
+# 4. Run the app
+streamlit run projects/tpm_pm_toolkit/app.py
+```
 
 ## Progress
 
@@ -37,36 +66,48 @@ Build a portfolio-quality AI TPM Copilot capable of:
 | Day 13 | MCP Integration         | ☐ Planned  |
 | Day 14 | Executive TPM Copilot   | ☐ Planned  |
 
+## Project Structure
+
+```
+pm-tpm-ai-tools/
+├── challenge/                  # 14-day challenge plan & tracking
+│   ├── 14_day_plan.md
+│   └── progress_tracker.md
+├── demos/                      # Demo recordings and assets
+├── lessons_learned/            # Notes from each day's build
+│   ├── common_errors.md
+│   └── day1_day2_lessons.md
+├── notes/                      # Working notes
+├── projects/
+│   └── tpm_pm_toolkit/         # The Streamlit application
+│       └── app.py
+├── skills/                     # Reusable AI skill definitions
+│   └── launch_risk_analysis.md
+├── LICENSE
+└── README.md
+```
+
 ## Documentation
+
 ### Skills
 
-Reusable AI skill definitions live in:
-
-skills/
+Reusable AI skill definitions live in [`skills/`](skills/).
 
 ### Challenge Roadmap
 
-See:
-
-challenge/14_day_plan.md
+See [`challenge/14_day_plan.md`](challenge/14_day_plan.md).
 
 ### Lessons Learned
 
-See:
-
-lessons_learned/day1_day2_lessons.md
+See [`lessons_learned/day1_day2_lessons.md`](lessons_learned/day1_day2_lessons.md).
 
 ### Common Errors & Fixes
 
-See:
-
-lessons_learned/common_errors.md
+See [`lessons_learned/common_errors.md`](lessons_learned/common_errors.md).
 
 ## Current Application
 
-Location:
-
-projects/tpm_pm_toolkit/app.py
+Location: [`projects/tpm_pm_toolkit/app.py`](projects/tpm_pm_toolkit/app.py)
 
 Current Features:
 
@@ -88,6 +129,6 @@ Current Features:
 
 ## Author
 
-Shweta Singh
+**Shweta Singh**
 
 Building an AI TPM Copilot through a 14-day advanced vibe coding challenge.
