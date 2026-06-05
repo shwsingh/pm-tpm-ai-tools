@@ -24,7 +24,7 @@ Build a portfolio-quality AI TPM Copilot capable of:
 | ------ | ----------------------- | ---------- |
 | Day 1  | TPM/PM Toolkit Homepage | ✅ Complete |
 | Day 2  | Launch Risk Analyzer    | ✅ Complete |
-| Day 3  | Launch Risk Skill       | ☐ Planned  |
+| Day 3  | Launch Risk Skill       | ✅ Complete |
 | Day 4  | PRD Builder Skill       | ☐ Planned  |
 | Day 5  | Bug Triage Agent        | ☐ Planned  |
 | Day 6  | Agent Workflow          | ☐ Planned  |
