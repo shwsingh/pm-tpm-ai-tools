@@ -25,12 +25,16 @@ Built:
 
 ## Day 3
 
-Status: In Progress
+Status: COMPLETE
 
-GGoal:
-Build Launch Risk Skill
+Goal:
+Built:
+- skills/launch_risk_analysis.md
+- First reusable TPM skill
+- README updates
+- Documentation updates
 
-Deliverables:
-- launch_risk_analysis.md
-- Skill documentation
-- README update
+Lessons:
+- Difference between Tool and Skill
+- Skills are reusable instructions
+- Skills can later be consumed by agents
