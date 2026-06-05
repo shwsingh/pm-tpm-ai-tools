@@ -38,6 +38,11 @@ Build a portfolio-quality AI TPM Copilot capable of:
 | Day 14 | Executive TPM Copilot   | ☐ Planned  |
 
 ## Documentation
+### Skills
+
+Reusable AI skill definitions live in:
+
+skills/
 
 ### Challenge Roadmap
 
@@ -70,6 +75,7 @@ Current Features:
 * Risk Detection
 * Executive Summary
 * Launch Health Assessment
+* Launch Risk Analysis Skill
 
 ## Tech Stack
 

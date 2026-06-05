@@ -25,12 +25,12 @@ Built:
 
 ## Day 3
 
-Status: NOT STARTED
+Status: In Progress
 
-Goal:
-Launch Risk Skill
+GGoal:
+Build Launch Risk Skill
 
 Deliverables:
-- skills/launch_risk_analysis.md
-- Update application
-- Update documentation
+- launch_risk_analysis.md
+- Skill documentation
+- README update
