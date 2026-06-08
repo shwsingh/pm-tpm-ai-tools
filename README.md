@@ -27,7 +27,11 @@ Build a portfolio-quality AI TPM Copilot capable of:
 * Agents
 * RAG
 * Evaluation Frameworks
-* MCP Integrations
+* MCP Servers
+* Resources
+* Tools
+* Prompts
+* Agent Workflows
 
 ## Quick Start
 
@@ -63,7 +67,7 @@ streamlit run projects/tpm_pm_toolkit/app.py
 | Day 10 | Dependency Agent        | ☐ Planned  |
 | Day 11 | Evaluation Framework    | ☐ Planned  |
 | Day 12 | Multi-Agent System      | ☐ Planned  |
-| Day 13 | MCP Integration         | ☐ Planned  |
+| Day 13 | TPM MCP Server          | ☐ Planned  |
 | Day 14 | Executive TPM Copilot   | ☐ Planned  |
 
 ## Project Structure
@@ -77,6 +81,8 @@ pm-tpm-ai-tools/
 ├── lessons_learned/            # Notes from each day's build
 │   ├── common_errors.md
 │   └── day1_day2_lessons.md
+├── mcp_servers/
+│   └── tpm_copilot_mcp/       # MCP server for TPM workflows
 ├── notes/                      # Working notes
 ├── projects/
 │   └── tpm_pm_toolkit/         # The Streamlit application
@@ -105,6 +111,29 @@ See [`lessons_learned/day1_day2_lessons.md`](lessons_learned/day1_day2_lessons.m
 
 See [`lessons_learned/common_errors.md`](lessons_learned/common_errors.md).
 
+## Planned Advanced Capabilities
+
+### MCP Server
+
+A TPM-focused MCP server exposing:
+
+#### Resources
+- Launch Checklist
+- Risk Register
+- Capacity Plan
+
+#### Tools
+- Launch Risk Analysis
+- Executive Status Generation
+- Escalation Creation
+
+#### Prompts
+- Launch Readiness Review
+- Weekly Executive Update
+- Capacity Review
+
+This demonstrates practical application of MCP for enterprise TPM workflows and agentic AI systems.
+
 ## Current Application
 
 Location: [`projects/tpm_pm_toolkit/app.py`](projects/tpm_pm_toolkit/app.py)
@@ -126,6 +155,8 @@ Current Features:
 * GitHub
 * VS Code
 * AI Coding Assistants
+* MCP (Model Context Protocol)
+* Agentic AI
 
 ## Author
 
