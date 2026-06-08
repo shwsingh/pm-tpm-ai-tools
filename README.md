@@ -17,20 +17,26 @@ A 14-day advanced vibe coding challenge to build an AI-powered TPM/Product Manag
 
 Build a portfolio-quality AI TPM Copilot capable of:
 
+### TPM Use Cases
+
 * Launch Risk Analysis
 * Bug Triage
 * Dependency Management
 * PRD Generation
 * Executive Reporting
 * Customer Feedback Analysis
+
+### AI Engineering
+
 * Skills
 * Agents
 * RAG
 * Evaluation Frameworks
+* Multi-Agent Systems
+
+### Agent Infrastructure
+
 * MCP Servers
-* Resources
-* Tools
-* Prompts
 * Agent Workflows
 
 ## Quick Start
@@ -92,6 +98,26 @@ pm-tpm-ai-tools/
 ├── LICENSE
 └── README.md
 ```
+## Planned Advanced Capabilities
+
+### TPM MCP Server
+
+The MCP server will expose:
+
+#### Resources
+* Launch Checklist
+* Risk Register
+* Capacity Plan
+
+#### Tools
+* Launch Risk Analysis
+* Executive Status Generation
+* Escalation Creation
+
+#### Prompts
+* Launch Readiness Review
+* Weekly Executive Update
+* Capacity Review
 
 ## Documentation
 
