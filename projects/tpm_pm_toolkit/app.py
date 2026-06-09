@@ -340,3 +340,239 @@ if st.button("Analyze Launch Risk"):
             f"Launch health is currently **{health}** based on the provided updates. "
             "The main focus areas are risk mitigation, owner clarity, and launch-readiness validation."
         )
+
+st.divider()
+
+st.markdown('<div class="section-title">🐞 Day 5: Bug Triage Agent</div>', unsafe_allow_html=True)
+
+st.write(
+    "Paste one or more bug reports. The agent classifies severity, suggests an owner, "
+    "and decides whether to escalate to an incident or route to the lead for discussion. "
+    "Today the classifier is heuristic; the LLM-backed version ships on Day 9."
+)
+
+P0_KEYWORDS = ["outage", "down", "data loss", "data corruption", "security breach", "pii leak", "revenue stop", "payment failure"]
+P1_KEYWORDS = ["broken", "regression", "500 error", "crash", "cannot", "unable", "blocker", "no workaround"]
+P2_KEYWORDS = ["minor", "slow", "intermittent", "workaround", "small impact"]
+P3_KEYWORDS = ["typo", "cosmetic", "ui glitch", "nit", "polish", "docs"]
+
+COMPONENT_MAP = {
+    "checkout": ("Checkout", "Payments team"),
+    "payment": ("Checkout", "Payments team"),
+    "billing": ("Billing", "Billing team"),
+    "auth": ("Auth", "Identity team"),
+    "login": ("Auth", "Identity team"),
+    "search": ("Search", "Search team"),
+    "api": ("API", "Platform team"),
+    "mobile": ("Mobile", "Mobile team"),
+    "android": ("Mobile", "Mobile team"),
+    "ios": ("Mobile", "Mobile team"),
+    "web": ("Web", "Frontend team"),
+    "ui": ("Web", "Frontend team"),
+    "pipeline": ("Data Pipeline", "Data team"),
+    "etl": ("Data Pipeline", "Data team"),
+}
+
+INCIDENT_KEYWORDS = ["outage", "data loss", "security breach", "pii", "revenue stop"]
+AMBIGUITY_KEYWORDS = ["maybe", "sometimes", "not sure", "unclear", "possibly"]
+
+
+def triage(bug_text: str) -> dict:
+    """Triage a single bug. Heuristic today; LLM-backed on Day 9.
+
+    The contract (input str, output dict with the keys below) is stable so the
+    LLM swap-in is a single function replacement.
+    """
+    text = bug_text.strip()
+    if len(text) < 10:
+        return {
+            "severity": "Unknown",
+            "component": "Unknown",
+            "owner": "Shweta (Lead) - needs discussion",
+            "priority": "Needs-lead",
+            "next_action": "Reach out to Shweta as the lead for triage discussion",
+            "escalate": False,
+            "escalate_reason": "Insufficient information",
+            "needs_lead": True,
+            "needs_lead_reason": "Bug report is too short to triage",
+            "summary": "[NEEDS LEAD] Bug report is too short - request reproduction steps",
+        }
+
+    lower = text.lower()
+
+    p0_hits = [k for k in P0_KEYWORDS if k in lower]
+    p1_hits = [k for k in P1_KEYWORDS if k in lower]
+    p2_hits = [k for k in P2_KEYWORDS if k in lower]
+    p3_hits = [k for k in P3_KEYWORDS if k in lower]
+    ambiguous_hits = [k for k in AMBIGUITY_KEYWORDS if k in lower]
+
+    if p0_hits:
+        severity = "P0"
+    elif p1_hits:
+        severity = "P1"
+    elif p2_hits:
+        severity = "P2"
+    elif p3_hits:
+        severity = "P3"
+    else:
+        severity = "Unknown"
+
+    component = "Unknown"
+    owner = "Unassigned"
+    for keyword, (comp, team) in COMPONENT_MAP.items():
+        if keyword in lower:
+            component = comp
+            owner = team
+            break
+
+    needs_lead = False
+    needs_lead_reason = ""
+
+    if severity == "Unknown":
+        needs_lead = True
+        needs_lead_reason = "No severity signal in the report"
+    elif severity in {"P0", "P1"} and len(p0_hits) + len(p1_hits) < 2:
+        needs_lead = True
+        needs_lead_reason = f"{severity} severity inferred from a single keyword - evidence is thin"
+    elif p2_hits and (p0_hits or "outage" in lower):
+        needs_lead = True
+        needs_lead_reason = "Conflicting signals - 'minor/workaround' alongside outage-class keywords"
+    elif component == "Unknown":
+        needs_lead = True
+        needs_lead_reason = "Could not identify the affected component"
+    elif ambiguous_hits:
+        needs_lead = True
+        needs_lead_reason = f"Ambiguous language detected: {', '.join(ambiguous_hits)}"
+
+    escalate = False
+    escalate_reason = ""
+    if not needs_lead:
+        if severity == "P0":
+            escalate = True
+            escalate_reason = "P0 severity - page on-call"
+        elif any(k in lower for k in INCIDENT_KEYWORDS):
+            escalate = True
+            escalate_reason = "Incident keyword detected (outage / data loss / security / PII / revenue stop)"
+
+    if needs_lead:
+        owner = "Shweta (Lead) - needs discussion"
+        next_action = "Reach out to Shweta as the lead for triage discussion"
+        priority = "Needs-lead"
+        summary_prefix = "[NEEDS LEAD] "
+    elif escalate:
+        next_action = "Page on-call"
+        priority = "Drop-everything"
+        summary_prefix = "[INCIDENT] "
+    elif severity == "P1":
+        next_action = "Drop-everything for the owning team"
+        priority = "Drop-everything"
+        summary_prefix = ""
+    elif severity == "P2":
+        next_action = "File for next sprint"
+        priority = "Next-sprint"
+        summary_prefix = ""
+    elif severity == "P3":
+        next_action = "Add to backlog"
+        priority = "Backlog"
+        summary_prefix = ""
+    else:
+        next_action = "Request reproduction steps and clarifying details"
+        priority = "Needs-lead"
+        summary_prefix = "[NEEDS LEAD] "
+
+    short = text if len(text) <= 80 else text[:77] + "..."
+    summary = f"{summary_prefix}{severity} - {component} - {short}"
+
+    return {
+        "severity": severity,
+        "component": component,
+        "owner": owner,
+        "priority": priority,
+        "next_action": next_action,
+        "escalate": escalate,
+        "escalate_reason": escalate_reason,
+        "needs_lead": needs_lead,
+        "needs_lead_reason": needs_lead_reason,
+        "summary": summary,
+    }
+
+
+bug_input = st.text_area(
+    "Bug Report(s)",
+    height=220,
+    placeholder=(
+        "Example 1: The checkout page is throwing 500 errors for all users in the EU region since the last deploy. Revenue is dropping.\n\n"
+        "Example 2: Minor UI glitch on the settings page - the toggle is misaligned on Safari.\n\n"
+        "(Separate multiple bugs with a blank line.)"
+    ),
+)
+
+if st.button("Triage Bugs"):
+    if not bug_input.strip():
+        st.warning("Please paste at least one bug report.")
+    else:
+        bugs = [b.strip() for b in bug_input.split("\n\n") if b.strip()]
+        results = [triage(b) for b in bugs]
+
+        p1_batch_count = sum(1 for r in results if r["severity"] == "P1")
+        if p1_batch_count > 2:
+            for r in results:
+                if r["severity"] == "P1" and not r["needs_lead"]:
+                    r["escalate"] = True
+                    r["escalate_reason"] = f"{p1_batch_count} P1 bugs in this batch - possible broader regression"
+                    r["next_action"] = "Page on-call"
+                    r["priority"] = "Drop-everything"
+                    if not r["summary"].startswith("[INCIDENT]"):
+                        r["summary"] = "[INCIDENT] " + r["summary"]
+
+        incident_count = sum(1 for r in results if r["escalate"])
+        lead_count = sum(1 for r in results if r["needs_lead"])
+
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            st.metric("Bugs Triaged", len(results))
+        with col2:
+            st.metric("Incidents", incident_count)
+        with col3:
+            st.metric("Need Lead", lead_count)
+        with col4:
+            sev_counts = {s: sum(1 for r in results if r["severity"] == s) for s in ["P0", "P1", "P2", "P3"]}
+            top_sev = max(sev_counts, key=lambda s: sev_counts[s]) if any(sev_counts.values()) else "—"
+            st.metric("Top Severity", top_sev)
+
+        st.subheader("Triage Results")
+
+        for i, r in enumerate(results, start=1):
+            with st.container():
+                st.markdown(f"**Bug #{i}**")
+
+                if r["escalate"]:
+                    st.error(f"🚨 {r['severity']} INCIDENT - {r['escalate_reason']}")
+                elif r["needs_lead"]:
+                    st.warning(f"🟠 Needs Lead Review - {r['needs_lead_reason']}")
+                elif r["severity"] == "P1":
+                    st.warning(f"🟡 {r['severity']} - drop-everything")
+                elif r["severity"] == "P2":
+                    st.info(f"🔵 {r['severity']} - next-sprint")
+                elif r["severity"] == "P3":
+                    st.info(f"⚪ {r['severity']} - backlog")
+                else:
+                    st.info(f"⚪ {r['severity']}")
+
+                c1, c2, c3 = st.columns(3)
+                with c1:
+                    st.write(f"**Component:** {r['component']}")
+                with c2:
+                    st.write(f"**Owner:** {r['owner']}")
+                with c3:
+                    st.write(f"**Priority:** {r['priority']}")
+
+                st.write(f"**Next Action:** {r['next_action']}")
+                st.caption(r["summary"])
+                st.divider()
+
+        if lead_count > 0:
+            st.info(
+                f"📩 {lead_count} bug(s) flagged as **Needs Lead Review** - "
+                "please reach out to **Shweta (Lead)** for triage discussion before acting."
+            )

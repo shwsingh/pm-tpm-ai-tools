@@ -7,7 +7,7 @@ A 14-day advanced vibe coding challenge to build an AI-powered TPM/Product Manag
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Streamlit](https://img.shields.io/badge/Built%20with-Streamlit-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
-[![Progress](https://img.shields.io/badge/Progress-4%2F14-brightgreen)](#progress)
+[![Progress](https://img.shields.io/badge/Progress-5%2F14-brightgreen)](#progress)
 
 </div>
 
@@ -65,7 +65,7 @@ streamlit run projects/tpm_pm_toolkit/app.py
 | Day 2  | Launch Risk Analyzer    | ✅ Complete |
 | Day 3  | Launch Risk Skill       | ✅ Complete |
 | Day 4  | PRD Builder Skill       | ✅ Complete |
-| Day 5  | Bug Triage Agent        | ☐ Planned  |
+| Day 5  | Bug Triage Agent        | ✅ Complete |
 | Day 6  | Agent Workflow          | ☐ Planned  |
 | Day 7  | Status Report Skill     | ☐ Planned  |
 | Day 8  | Knowledge Base / RAG    | ☐ Planned  |
@@ -93,7 +93,14 @@ pm-tpm-ai-tools/
 ├── projects/
 │   └── tpm_pm_toolkit/         # The Streamlit application
 │       └── app.py
+├── agents/                     # Agent contracts (planner, tools, escalation)
+│   └── bug_triage_agent.md
+├── design_decisions/           # Per-day design choices with pros/cons
+│   └── day5_bug_triage_agent.md
+├── examples/                   # Worked examples produced by skills
+│   └── prd_ai_tpm_copilot.md
 ├── skills/                     # Reusable AI skill definitions
+│   ├── bug_triage.md
 │   ├── launch_risk_analysis.md
 │   └── prd_builder.md
 ├── LICENSE
@@ -174,6 +181,7 @@ Current Features:
 * Launch Health Assessment
 * Launch Risk Analysis Skill
 * PRD Builder Skill
+* Bug Triage Agent (heuristic, LLM-swap stub for Day 9)
 
 ## Tech Stack
 

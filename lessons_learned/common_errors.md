@@ -8,3 +8,4 @@
 | GitHub push rejected | Email privacy | Configure GitHub noreply email |
 | Typed code in terminal | Wrong context | Put code inside app.py |
 | Streamlit module not found | Wrong environment | Activate venv |
+| Pyright: `max(dict, key=dict.get)` overload error | dict.get's signature confuses the type checker when used as a key fn | Use `key=lambda s: d[s]` |

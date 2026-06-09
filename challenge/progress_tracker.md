@@ -69,3 +69,32 @@ Lessons:
 - A senior-PM critique pass is itself a reusable skill - turned the PRD from generic to defensible in one cycle
 - Timeline realism comes from challenging hidden gates (SOC2 observation window, multi-agent quality bar), not from optimism
 - Every milestone needs an exit criterion and a role-named owner
+
+---
+
+## Day 5
+
+Status: COMPLETE
+
+Goal:
+Build the first agent in the project - Bug Triage Agent - with the agent shape (planner, tools, escalation, output contract) while keeping the classifier heuristic so the LLM swap-in on Day 9 is a single function change.
+
+Built:
+- skills/bug_triage.md (work contract: severity, component, owner, priority, escalation, lead-review)
+- agents/bug_triage_agent.md (agent contract: skills used, planner pattern, tools, memory, escalation, routing to Lead)
+- projects/tpm_pm_toolkit/app.py - new Day 5 section with triage() function and Streamlit UI
+- design_decisions/day5_bug_triage_agent.md - five design choices with pros, cons, alternatives
+- README badge -> 5/14; 14_day_plan Day 5 -> Done
+
+Key design decisions (see design_decisions/day5_bug_triage_agent.md):
+1. Heuristic + stable LLM-swap stub (Option 2) - matches project rhythm; Day 9 swap is one function
+2. Route ambiguous bugs to "Shweta (Lead)" - confidence boundary as a first-class output
+3. Separate agents/ and skills/ directories - sets up Day 6 orchestration
+4. Output contract returns a dict, not a string - composable for Day 6
+5. P1 batch threshold (>2 -> incident) - catches deploy regressions cheaply
+
+Lessons:
+- The agent shape (parse -> classify -> decide -> respond) is the real Day 5 learning; the keyword classifier is throwaway
+- A stable input/output contract is what makes the LLM swap-in cheap
+- "Route to Lead" is a reusable pattern for any agent with bounded confidence
+- Design decisions documented at end of day are easier to read in 3 months than the diff is

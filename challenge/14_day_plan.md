@@ -10,7 +10,7 @@ Build an AI-powered TPM Copilot that can analyze launch health, risks, blockers,
 | Day 2 | Launch Risk Analyzer | Analyze raw launch notes | Prompting, Structured Logic | ✅ Done |
 | Day 3 | Launch Risk Skill | Reusable skill file | Skills | ✅ Done |
 | Day 4 | PRD Builder Skill | Idea to PRD generator | Skills Architecture | ✅ Done |
-| Day 5 | Bug Triage Agent | Bug classification and prioritization | Agents | ☐ |
+| Day 5 | Bug Triage Agent | Bug classification and prioritization | Agents | ✅ Done |
 | Day 6 | Agent Workflow | Bug to triage to escalation | Agent Orchestration | ☐ |
 | Day 7 | Status Report Skill | Weekly exec report generator | Summarization | ☐ |
 | Day 8 | Knowledge Base | Upload/search TPM docs | RAG | ☐ |
