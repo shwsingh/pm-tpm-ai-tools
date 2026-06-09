@@ -8,15 +8,24 @@
     flowchart: { curve: "basis", padding: 20 }
   });
 
-  document.addEventListener("DOMContentLoaded", () => {
+  // Module scripts are deferred, so the DOM is already parsed by the
+  // time this runs. Just do the work directly - waiting for
+  // DOMContentLoaded misses the event entirely.
+  const run = async () => {
     document.querySelectorAll('pre > code.language-mermaid').forEach(el => {
       const wrapper = document.createElement('div');
       wrapper.className = 'mermaid';
       wrapper.textContent = el.textContent;
       el.parentElement.replaceWith(wrapper);
     });
-    mermaid.run();
-  });
+    await mermaid.run({ querySelector: '.mermaid' });
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', run);
+  } else {
+    run();
+  }
 </script>
 <style>
   .mermaid { background: #ffffff; padding: 16px; border-radius: 8px; text-align: center; margin: 1.5em 0; border: 1px solid #e2e8f0; }
