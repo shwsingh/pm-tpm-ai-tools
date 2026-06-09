@@ -38,60 +38,92 @@ timeline
 
 ## 2. Architecture as it stands today (Day 5)
 
-The boxes are labeled with the day the file or directory was added.
+Read this left-to-right: a TPM pastes input, the Streamlit app routes it to the right capability, agents (when present) consume skills and return structured output. Shapes encode role — rounded = UI, rectangle = agent, cylinder = skill spec. Dashed/pink = planned for later days.
 
 ```mermaid
-flowchart TB
-    subgraph DOC["Documentation (Day 0-1)"]
-        readme["README.md<br/>(Day 1)"]
-        plan["challenge/14_day_plan.md<br/>(Day 0)"]
-        tracker["challenge/progress_tracker.md<br/>(Day 1)"]
-        claudemd["CLAUDE.md<br/>(post Day 3)"]
-        evol["challenge/project_evolution.md<br/>(this file)"]
+flowchart LR
+    User(["TPM / PM<br/>user"]):::user
+
+    subgraph APP["Streamlit App"]
+        direction TB
+        Home(["Homepage"]):::ui
+        LRA(["Launch Risk<br/>Analyzer UI"]):::ui
+        BUG(["Bug Triage UI<br/>+ triage fn"]):::ui
     end
 
-    subgraph SKILLS["Skills - markdown specs"]
-        s_risk["skills/launch_risk_analysis.md<br/>(Day 3)"]
-        s_prd["skills/prd_builder.md<br/>(Day 4)"]
-        s_bug["skills/bug_triage.md<br/>(Day 5)"]
+    subgraph AGENTS["Agents"]
+        BTA["Bug Triage Agent"]:::agent
     end
 
-    subgraph AGENTS["Agents - runtime contracts (Day 5+)"]
-        a_bug["agents/bug_triage_agent.md<br/>(Day 5)"]
+    subgraph SKILLS["Skills (markdown specs)"]
+        S_LR[("launch_risk_analysis")]:::skill
+        S_PRD[("prd_builder")]:::skill
+        S_BUG[("bug_triage")]:::skill
     end
 
-    subgraph APP["Streamlit Application"]
-        app["projects/tpm_pm_toolkit/app.py"]
-        app_d1["Day 1: Homepage cards"]
-        app_d2["Day 2: Launch Risk Analyzer"]
-        app_d5["Day 5: Bug Triage UI + triage()"]
-        app --> app_d1
-        app --> app_d2
-        app --> app_d5
+    Output["Structured output<br/>severity / risk brief / PRD"]:::output
+
+    User --> APP
+    LRA -. follows spec .-> S_LR
+    BUG --> BTA
+    BTA -. uses .-> S_BUG
+    APP --> Output
+    Output --> User
+
+    subgraph FUTURE["Planned (Day 6 - 14)"]
+        direction TB
+        RAG[("RAG knowledge base<br/>Day 8")]:::future
+        MCP["MCP servers<br/>Jira, GitHub<br/>Day 13"]:::future
+        EVAL["DeepEval framework<br/>Day 11"]:::future
+        MULTI["Multi-agent<br/>orchestration<br/>Day 12"]:::future
+        LLM["Claude Sonnet swap<br/>Day 7 - 9"]:::future
     end
 
-    subgraph META["Meta - learning, decisions, examples"]
-        ex["examples/prd_ai_tpm_copilot.md<br/>(Day 4)"]
-        dd["design_decisions/day5_bug_triage_agent.md<br/>(Day 5)"]
-        l12["lessons_learned/day1_day2_lessons.md<br/>(Day 2)"]
-        l34["lessons_learned/day3_day4_lessons.md<br/>(Day 4)"]
-        l5["lessons_learned/day5_lessons.md<br/>(Day 5)"]
-        n4["notes/day4_prd_critique.md<br/>(Day 4)"]
-        ce["lessons_learned/common_errors.md<br/>(Day 2+)"]
+    AGENTS -.-> FUTURE
+    SKILLS -.-> FUTURE
+
+    subgraph META["Supporting artifacts"]
+        direction TB
+        EX["examples/<br/>worked PRD"]:::meta
+        DD["design_decisions/<br/>per-day choices"]:::meta
+        LL["lessons_learned/<br/>per-day notes"]:::meta
+        NOTES["notes/<br/>reusable templates"]:::meta
     end
 
-    subgraph FUTURE["Planned (Day 6-14)"]
-        f_mcp["mcp_servers/tpm_copilot_mcp/<br/>(scaffold exists, wires up Day 13)"]
-        f_demo["demos/<br/>(Day 14)"]
-    end
+    AGENTS -.-> META
+    SKILLS -.-> META
 
-    SKILLS --> AGENTS
-    SKILLS --> APP
-    AGENTS --> APP
-    DOC -.-> SKILLS
-    DOC -.-> AGENTS
-    META -.-> DOC
+    classDef user fill:#1e293b,stroke:#0f172a,color:#fff,font-weight:bold
+    classDef ui fill:#fef3c7,stroke:#a16207,color:#0f172a
+    classDef agent fill:#dcfce7,stroke:#166534,color:#0f172a,font-weight:bold
+    classDef skill fill:#dbeafe,stroke:#1e40af,color:#0f172a
+    classDef output fill:#ede9fe,stroke:#6d28d9,color:#0f172a
+    classDef meta fill:#f1f5f9,stroke:#94a3b8,color:#475569
+    classDef future fill:#fce7f3,stroke:#9d174d,color:#831843,stroke-dasharray:5 5
 ```
+
+### Legend
+
+| Shape / colour | Means |
+|---|---|
+| Dark navy oval | User |
+| Yellow rounded box | Streamlit UI surface |
+| Green rectangle | Agent — runtime logic, consumes skills |
+| Blue cylinder | Skill — markdown spec, the work contract |
+| Purple rectangle | Structured output returned to the user |
+| Gray box (dashed link) | Supporting artifact (lessons, design decisions, examples, notes) |
+| Pink dashed box | Planned for a later day |
+
+### When each piece was added
+
+| Component | Day |
+|---|---|
+| Homepage | Day 1 |
+| Launch Risk Analyzer UI | Day 2 |
+| `skills/launch_risk_analysis.md` | Day 3 |
+| `skills/prd_builder.md` + `examples/` + `notes/` | Day 4 |
+| `skills/bug_triage.md` + `agents/` + `design_decisions/` + Bug Triage UI | Day 5 |
+| RAG, MCP, DeepEval, multi-agent, LLM swap | Day 6 – 14 (planned) |
 
 ---
 

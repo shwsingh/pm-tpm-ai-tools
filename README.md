@@ -93,28 +93,42 @@ timeline
 
 ```mermaid
 flowchart LR
+    User(["TPM / PM<br/>user"]):::user
+
+    subgraph APP["Streamlit App"]
+        direction TB
+        Home(["Homepage"]):::ui
+        LRA(["Launch Risk<br/>Analyzer"]):::ui
+        BUG(["Bug Triage UI"]):::ui
+    end
+
+    BTA["Bug Triage Agent"]:::agent
+
     subgraph SKILLS["Skills (markdown specs)"]
-        s1["launch_risk_analysis<br/>(Day 3)"]
-        s2["prd_builder<br/>(Day 4)"]
-        s3["bug_triage<br/>(Day 5)"]
+        S_LR[("launch_risk_analysis")]:::skill
+        S_PRD[("prd_builder")]:::skill
+        S_BUG[("bug_triage")]:::skill
     end
 
-    subgraph AGENTS["Agents (runtime)"]
-        a1["bug_triage_agent<br/>(Day 5)"]
-    end
+    Output["Structured output<br/>severity / risk / PRD"]:::output
 
-    subgraph APP["Streamlit app.py"]
-        app1["Homepage (Day 1)"]
-        app2["Launch Risk UI (Day 2)"]
-        app3["Bug Triage UI + triage() (Day 5)"]
-    end
+    User --> APP
+    LRA -. follows spec .-> S_LR
+    BUG --> BTA
+    BTA -. uses .-> S_BUG
+    APP --> Output
+    Output --> User
 
-    s1 -.spec for.-> app2
-    s3 --> a1
-    a1 --> app3
+    classDef user fill:#1e293b,stroke:#0f172a,color:#fff,font-weight:bold
+    classDef ui fill:#fef3c7,stroke:#a16207,color:#0f172a
+    classDef agent fill:#dcfce7,stroke:#166534,color:#0f172a,font-weight:bold
+    classDef skill fill:#dbeafe,stroke:#1e40af,color:#0f172a
+    classDef output fill:#ede9fe,stroke:#6d28d9,color:#0f172a
 ```
 
-Full per-day delta diagrams, mindmap, and Gantt → [`challenge/project_evolution.md`](challenge/project_evolution.md).
+**Legend** — yellow rounded = UI, green = agent, blue cylinder = skill spec, navy = user, purple = output.
+
+Full per-day delta diagrams, planned-future layer, mindmap, and Gantt → [`challenge/project_evolution.md`](challenge/project_evolution.md).
 
 ## Project Structure
 
