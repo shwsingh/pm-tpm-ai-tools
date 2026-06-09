@@ -1,9 +1,12 @@
 ---
+title: "AI TPM Copilot"
 layout: home
-title: AI TPM Copilot
+author_profile: true
+entries_layout: list
+classes: wide
 ---
 
-I'm building an AI assistant for TPMs in 14 days, in public.
+Building an AI assistant for TPMs in 14 days, in public.
 
 This site is the weekly notebook: what I shipped, what I got wrong, and what I learned about building agentic systems.
 

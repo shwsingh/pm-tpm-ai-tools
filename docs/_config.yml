@@ -1,29 +1,82 @@
-title: AI TPM Copilot
+title: "AI TPM Copilot"
+subtitle: "Building an AI assistant for TPMs in 14 days, in public"
+name: "Shweta Singh"
 description: >-
-  Building an AI assistant for TPMs in 14 days, in public. Weekly notes on
-  what I shipped, what I got wrong, and what I learned about building agentic
-  systems.
-author:
-  name: Shweta Singh
+  Weekly notes from a TPM building an AI assistant in public.
+  What I shipped, what I got wrong, and what I learned about
+  building agentic systems.
 
 url: "https://shwsingh.github.io"
 baseurl: "/pm-tpm-ai-tools"
 
-theme: minima
-minima:
-  skin: auto
-  date_format: "%b %-d, %Y"
-  social_links:
-    - { platform: github, user_url: "https://github.com/shwsingh/pm-tpm-ai-tools" }
+remote_theme: "mmistakes/minimal-mistakes@4.26.2"
+minimal_mistakes_skin: "air"
+search: true
+
+repository: "shwsingh/pm-tpm-ai-tools"
 
 permalink: /:title/
+
+words_per_minute: 220
+
+author:
+  name: "Shweta Singh"
+  bio: "Senior TPM. Building an AI TPM Copilot in 14 days, in public."
+  location: "San Francisco Bay Area"
+  links:
+    - label: "GitHub"
+      icon: "fab fa-fw fa-github"
+      url: "https://github.com/shwsingh/pm-tpm-ai-tools"
+
+footer:
+  links:
+    - label: "GitHub"
+      icon: "fab fa-fw fa-github"
+      url: "https://github.com/shwsingh/pm-tpm-ai-tools"
 
 plugins:
   - jekyll-feed
   - jekyll-seo-tag
+  - jekyll-include-cache
+  - jekyll-remote-theme
+  - jekyll-paginate
+  - jekyll-sitemap
 
-header_pages:
-  - about.md
+paginate: 5
+paginate_path: "/page:num/"
+
+defaults:
+  - scope:
+      path: ""
+      type: posts
+    values:
+      layout: single
+      author_profile: true
+      read_time: true
+      comments: false
+      share: true
+      related: true
+      show_date: true
+      toc: true
+      toc_sticky: true
+      toc_label: "On this page"
+      classes: wide
+  - scope:
+      path: ""
+      type: pages
+    values:
+      layout: single
+      author_profile: true
+
+include:
+  - _pages
+
+category_archive:
+  type: liquid
+  path: /categories/
+tag_archive:
+  type: liquid
+  path: /tags/
 
 exclude:
   - README.md
