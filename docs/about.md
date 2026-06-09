@@ -5,7 +5,7 @@ layout: single
 author_profile: true
 ---
 
-I'm **Shweta Singh** — a Technical Program Manager building an AI TPM Copilot through a 14-day public challenge.
+I'm **Shweta Singh** — Senior Manager, TPM at Google, building an AI TPM Copilot through a 14-day public challenge.
 
 This blog is the weekly notebook from that build. Each post covers what shipped, what I'd do differently, and what I learned about building agentic systems.
 

@@ -1,6 +1,6 @@
 # PRD: AI TPM Copilot
 
-**Author:** Shweta Singh (Senior PM)
+**Author:** Shweta Singh (Senior Manager, TPM at Google)
 **Status:** Exec-Ready (v2 — revised after first review pass)
 **Last updated:** 2026-06-08
 **Generated using:** `skills/prd_builder.md`

@@ -21,8 +21,8 @@ words_per_minute: 220
 
 author:
   name: "Shweta Singh"
-  bio: "Senior TPM. Building an AI TPM Copilot in 14 days, in public."
-  location: "San Francisco Bay Area"
+  bio: "Senior Manager, TPM at Google. Building an AI TPM Copilot in 14 days, in public."
+  location: "Google Bay Area"
   links:
     - label: "GitHub"
       icon: "fab fa-fw fa-github"
