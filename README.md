@@ -7,7 +7,7 @@ A 14-day advanced vibe coding challenge to build an AI-powered TPM/Product Manag
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Streamlit](https://img.shields.io/badge/Built%20with-Streamlit-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
-[![Progress](https://img.shields.io/badge/Progress-3%2F14-brightgreen)](#progress)
+[![Progress](https://img.shields.io/badge/Progress-4%2F14-brightgreen)](#progress)
 
 </div>
 
@@ -64,7 +64,7 @@ streamlit run projects/tpm_pm_toolkit/app.py
 | Day 1  | TPM/PM Toolkit Homepage | ✅ Complete |
 | Day 2  | Launch Risk Analyzer    | ✅ Complete |
 | Day 3  | Launch Risk Skill       | ✅ Complete |
-| Day 4  | PRD Builder Skill       | ☐ Planned  |
+| Day 4  | PRD Builder Skill       | ✅ Complete |
 | Day 5  | Bug Triage Agent        | ☐ Planned  |
 | Day 6  | Agent Workflow          | ☐ Planned  |
 | Day 7  | Status Report Skill     | ☐ Planned  |
@@ -94,7 +94,8 @@ pm-tpm-ai-tools/
 │   └── tpm_pm_toolkit/         # The Streamlit application
 │       └── app.py
 ├── skills/                     # Reusable AI skill definitions
-│   └── launch_risk_analysis.md
+│   ├── launch_risk_analysis.md
+│   └── prd_builder.md
 ├── LICENSE
 └── README.md
 ```
@@ -172,6 +173,7 @@ Current Features:
 * Executive Summary
 * Launch Health Assessment
 * Launch Risk Analysis Skill
+* PRD Builder Skill
 
 ## Tech Stack
 
