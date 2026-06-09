@@ -76,13 +76,54 @@ streamlit run projects/tpm_pm_toolkit/app.py
 | Day 13 | TPM MCP Server          | ☐ Planned  |
 | Day 14 | Executive TPM Copilot   | ☐ Planned  |
 
+### Build timeline
+
+```mermaid
+timeline
+    title 14-Day Build Progress
+    Day 0  : Repo + 14-day plan
+    Day 1  : Streamlit homepage
+    Day 2  : Launch Risk Analyzer (heuristic)
+    Day 3  : First skill spec - launch_risk_analysis
+    Day 4  : PRD Builder skill + worked example + critique loop
+    Day 5  : Bug Triage Agent (first agent) + design decisions
+```
+
+### Current architecture (Day 5)
+
+```mermaid
+flowchart LR
+    subgraph SKILLS["Skills (markdown specs)"]
+        s1["launch_risk_analysis<br/>(Day 3)"]
+        s2["prd_builder<br/>(Day 4)"]
+        s3["bug_triage<br/>(Day 5)"]
+    end
+
+    subgraph AGENTS["Agents (runtime)"]
+        a1["bug_triage_agent<br/>(Day 5)"]
+    end
+
+    subgraph APP["Streamlit app.py"]
+        app1["Homepage (Day 1)"]
+        app2["Launch Risk UI (Day 2)"]
+        app3["Bug Triage UI + triage() (Day 5)"]
+    end
+
+    s1 -.spec for.-> app2
+    s3 --> a1
+    a1 --> app3
+```
+
+Full per-day delta diagrams, mindmap, and Gantt → [`challenge/project_evolution.md`](challenge/project_evolution.md).
+
 ## Project Structure
 
 ```
 pm-tpm-ai-tools/
 ├── challenge/                  # 14-day challenge plan & tracking
 │   ├── 14_day_plan.md
-│   └── progress_tracker.md
+│   ├── progress_tracker.md
+│   └── project_evolution.md   # Visual diagrams: timeline, architecture, mindmap, Gantt
 ├── demos/                      # Demo recordings and assets
 ├── lessons_learned/            # Notes from each day's build
 │   ├── common_errors.md
