@@ -83,8 +83,19 @@ Built:
 - skills/bug_triage.md (work contract: severity, component, owner, priority, escalation, lead-review)
 - agents/bug_triage_agent.md (agent contract: skills used, planner pattern, tools, memory, escalation, routing to Lead)
 - projects/tpm_pm_toolkit/app.py - new Day 5 section with triage() function and Streamlit UI
-- design_decisions/day5_bug_triage_agent.md - five design choices with pros, cons, alternatives
+- design_decisions/day5_bug_triage_agent.md - five design choices with pros, cons, alternatives, plus observed-evidence section from the 6-bug smoke test
 - README badge -> 5/14; 14_day_plan Day 5 -> Done
+
+Built after the core agent (same day, post-wrap-up additions):
+- challenge/project_evolution.md - visual project history with mermaid timeline, current-state architecture, per-day delta diagrams, mindmap, and 14-day gantt
+- README compact architecture diagram (then redesigned for visual clarity with role-coded colors and shapes)
+- docs/ - full GitHub Pages blog site on Minimal Mistakes theme
+  - docs/_config.yml with author profile, share buttons, sticky TOC, search
+  - docs/_posts/2026-06-09-week1-ai-tpm-copilot.md - Week 1 blog post (revised after a critique pass for TPM/PM audience)
+  - docs/_includes/head/custom.html - Mermaid CDN script (with type=module readyState fix)
+  - docs/assets/images/hero-week1.svg - custom gradient hero banner
+  - docs/index.md, docs/about.md
+- Author title updated to Senior Manager, TPM at Google; location -> Google Bay Area
 
 Key design decisions (see design_decisions/day5_bug_triage_agent.md):
 1. Heuristic + stable LLM-swap stub (Option 2) - matches project rhythm; Day 9 swap is one function
@@ -93,8 +104,17 @@ Key design decisions (see design_decisions/day5_bug_triage_agent.md):
 4. Output contract returns a dict, not a string - composable for Day 6
 5. P1 batch threshold (>2 -> incident) - catches deploy regressions cheaply
 
+Observed evidence from the smoke test (logged in the design decisions doc):
+- 3 of 6 representative bugs routed to "Shweta (Lead)" - above the 20% threshold
+- The keyword classifier missed "revenue is dropping" because it didn't literal-match "revenue stop"
+- Route-to-Lead safety net caught every miss - the design worked exactly as intended
+- This is the concrete motivation for the Day 9 LLM swap, not a hypothesis
+
 Lessons:
 - The agent shape (parse -> classify -> decide -> respond) is the real Day 5 learning; the keyword classifier is throwaway
 - A stable input/output contract is what makes the LLM swap-in cheap
 - "Route to Lead" is a reusable pattern for any agent with bounded confidence
 - Design decisions documented at end of day are easier to read in 3 months than the diff is
+- Visual architecture diagrams (left-to-right, color-coded by role, shape-encoded) communicate the system 10x better than text trees
+- A blog post for a TPM/PM audience needs ONE memorable takeaway, not three meta-learnings - the rewrite cut jargon and added a "Monday-morning thing to try"
+- type=module scripts are deferred; DOMContentLoaded has already fired by the time they run (Mermaid render bug, now fixed)
