@@ -45,6 +45,22 @@ Choosing the stable-contract heuristic forces the contract decision to happen be
 
 Day 9, when the Feedback Agent is built LLM-first. At that point, swap `triage()` to a Claude call that returns the same dict shape.
 
+### Observed evidence (2026-06-09 smoke test)
+
+Ran six representative bugs through `triage()` and the brittleness predicted in the Cons section showed up immediately. Findings:
+
+| Bug | Heuristic verdict | What went wrong |
+|---|---|---|
+| `"500 errors... revenue is dropping"` | P1 → Lead | "revenue is dropping" did not match the literal `"revenue stop"` keyword; the case landed on a single P1 hit ("500 error") and triggered the thin-evidence rule. |
+| `"Minor UI glitch... Safari"` | P2 (not P3) | "minor" lives in `P2_KEYWORDS` and is checked before `P3_KEYWORDS`, so cosmetic bugs that include "minor" land as P2. |
+| `"PII may be leaking..."` | Unknown → Lead | "pii leak" did not literal-match "PII may be leaking"; severity classifier fell through to Unknown. |
+
+The good news is that every miss routed to Lead instead of mis-classifying. The route-to-Lead rule is doing exactly the safety-net job it was designed for.
+
+The bad news is the brittleness is worse than expected — three of six test cases route to Lead, which is well above the 20% Lead-routing threshold flagged in Decision 2. If this rate held in production, it would mean the heuristic is below the bar for daily use.
+
+This is now the concrete motivation for the Day 9 LLM swap rather than just a hypothesis.
+
 ---
 
 ## Decision 2 — Route ambiguous bugs to "Shweta (Lead)" instead of guessing
