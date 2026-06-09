@@ -1,0 +1,33 @@
+title: AI TPM Copilot
+description: >-
+  Building an AI assistant for TPMs in 14 days, in public. Weekly notes on
+  what I shipped, what I got wrong, and what I learned about building agentic
+  systems.
+author:
+  name: Shweta Singh
+
+url: "https://shwsingh.github.io"
+baseurl: "/pm-tpm-ai-tools"
+
+theme: minima
+minima:
+  skin: auto
+  date_format: "%b %-d, %Y"
+  social_links:
+    - { platform: github, user_url: "https://github.com/shwsingh/pm-tpm-ai-tools" }
+
+permalink: /:title/
+
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+
+header_pages:
+  - about.md
+
+exclude:
+  - README.md
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor

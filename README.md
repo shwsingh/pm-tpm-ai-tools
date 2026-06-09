@@ -8,6 +8,9 @@ A 14-day advanced vibe coding challenge to build an AI-powered TPM/Product Manag
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Streamlit](https://img.shields.io/badge/Built%20with-Streamlit-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
 [![Progress](https://img.shields.io/badge/Progress-5%2F14-brightgreen)](#progress)
+[![Blog](https://img.shields.io/badge/Blog-shwsingh.github.io%2Fpm--tpm--ai--tools-1e3a8a)](https://shwsingh.github.io/pm-tpm-ai-tools/)
+
+📝 **Weekly blog:** [shwsingh.github.io/pm-tpm-ai-tools](https://shwsingh.github.io/pm-tpm-ai-tools/)
 
 </div>
 
