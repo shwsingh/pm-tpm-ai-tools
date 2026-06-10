@@ -576,3 +576,177 @@ if st.button("Triage Bugs"):
                 f"📩 {lead_count} bug(s) flagged as **Needs Lead Review** - "
                 "please reach out to **Shweta (Lead)** for triage discussion before acting."
             )
+
+st.divider()
+
+# ── Day 6: Agent Workflow ────────────────────────────────────────────────────
+
+st.markdown('<div class="section-title">⚙️ Day 6: Agent Workflow</div>', unsafe_allow_html=True)
+
+st.write(
+    "Run bugs through a 3-stage pipeline: **Ingest → Triage → Escalation Handler**. "
+    "Each stage's output feeds the next. The escalation stage produces actionable artifacts — "
+    "an incident summary draft and a Slack-style message — ready to send when MCP is wired on Day 13."
+)
+
+
+def ingest(raw_text: str) -> dict:
+    """Stage 1 — parse and validate raw input."""
+    bugs = [b.strip() for b in raw_text.split("\n\n") if b.strip()]
+    valid = [b for b in bugs if len(b) >= 10]
+    rejected = [b for b in bugs if len(b) < 10]
+    return {
+        "valid_bugs": valid,
+        "rejected_bugs": rejected,
+        "total_parsed": len(bugs),
+    }
+
+
+def run_triage_stage(valid_bugs: list) -> list:
+    """Stage 2 — triage each valid bug using the Day 5 triage() function."""
+    results = []
+    for bug in valid_bugs:
+        r = triage(bug)
+        r["original_text"] = bug
+        results.append(r)
+
+    # Batch P1 escalation rule: >2 P1s in one batch = likely regression
+    p1_count = sum(1 for r in results if r["severity"] == "P1")
+    if p1_count > 2:
+        for r in results:
+            if r["severity"] == "P1" and not r["needs_lead"]:
+                r["escalate"] = True
+                r["escalate_reason"] = f"{p1_count} P1s in batch — possible regression"
+                r["next_action"] = "Page on-call"
+                r["priority"] = "Drop-everything"
+                if not r["summary"].startswith("[INCIDENT]"):
+                    r["summary"] = "[INCIDENT] " + r["summary"]
+    return results
+
+
+def escalation_handler(triage_results: list) -> dict:
+    """Stage 3 — generate escalation artifacts for bugs that need action."""
+    incidents = [r for r in triage_results if r["escalate"]]
+    leads = [r for r in triage_results if r["needs_lead"]]
+    routine = [r for r in triage_results if not r["escalate"] and not r["needs_lead"]]
+
+    # Draft incident summary (one per incident bug)
+    incident_drafts = []
+    for r in incidents:
+        draft = (
+            f"**[INCIDENT DRAFT]** {r['severity']} — {r['component']}\n\n"
+            f"**Summary:** {r['summary']}\n\n"
+            f"**Reason:** {r['escalate_reason']}\n\n"
+            f"**Suggested Owner:** {r['owner']}\n\n"
+            f"**Immediate Action:** {r['next_action']}"
+        )
+        incident_drafts.append(draft)
+
+    # Slack-style on-call message
+    slack_messages = []
+    for r in incidents:
+        msg = (
+            f":rotating_light: *INCIDENT — {r['severity']} / {r['component']}* :rotating_light:\n"
+            f"> {r['original_text'][:120]}{'...' if len(r['original_text']) > 120 else ''}\n"
+            f"Reason: {r['escalate_reason']}\n"
+            f"Assigned to: {r['owner']} | Action: {r['next_action']}"
+        )
+        slack_messages.append(msg)
+
+    # Lead notification summary
+    lead_notification = ""
+    if leads:
+        items = "\n".join(f"• {r['summary']}" for r in leads)
+        lead_notification = (
+            f"{len(leads)} bug(s) need your review before action can be taken:\n\n{items}"
+        )
+
+    return {
+        "incidents": incidents,
+        "leads": leads,
+        "routine": routine,
+        "incident_drafts": incident_drafts,
+        "slack_messages": slack_messages,
+        "lead_notification": lead_notification,
+    }
+
+
+workflow_input = st.text_area(
+    "Bug Report(s) — Workflow Input",
+    height=220,
+    placeholder=(
+        "Paste one or more bug reports, separated by blank lines.\n\n"
+        "Example 1: The payment API is returning 500 errors for all EU users since the last deploy. Revenue is dropping fast.\n\n"
+        "Example 2: Search results are slow on mobile — takes 8 seconds, workaround is to use the web app.\n\n"
+        "Example 3: There is a typo on the settings page — 'Prefrence' should be 'Preference'."
+    ),
+)
+
+if st.button("Run Agent Workflow"):
+    if not workflow_input.strip():
+        st.warning("Please paste at least one bug report.")
+    else:
+        # ── Stage 1: Ingest ──────────────────────────────────────────────────
+        with st.expander("Stage 1 — Ingest", expanded=True):
+            ingested = ingest(workflow_input)
+            c1, c2, c3 = st.columns(3)
+            c1.metric("Parsed", ingested["total_parsed"])
+            c2.metric("Valid", len(ingested["valid_bugs"]))
+            c3.metric("Rejected (too short)", len(ingested["rejected_bugs"]))
+            if ingested["rejected_bugs"]:
+                st.warning("Rejected: " + " | ".join(ingested["rejected_bugs"]))
+            st.success(f"✅ {len(ingested['valid_bugs'])} bug(s) passed ingest and will be triaged.")
+
+        if not ingested["valid_bugs"]:
+            st.error("No valid bugs to process.")
+        else:
+            # ── Stage 2: Triage ──────────────────────────────────────────────
+            triage_results = run_triage_stage(ingested["valid_bugs"])
+
+            with st.expander("Stage 2 — Triage", expanded=True):
+                sev_counts = {}
+                for r in triage_results:
+                    sev_counts[r["severity"]] = sev_counts.get(r["severity"], 0) + 1
+
+                cols = st.columns(len(sev_counts) + 1)
+                cols[0].metric("Total Triaged", len(triage_results))
+                for i, (sev, count) in enumerate(sorted(sev_counts.items()), start=1):
+                    cols[i].metric(sev, count)
+
+                for i, r in enumerate(triage_results, start=1):
+                    label = r["summary"]
+                    if r["escalate"]:
+                        st.error(f"Bug #{i}: {label}")
+                    elif r["needs_lead"]:
+                        st.warning(f"Bug #{i}: {label}")
+                    elif r["severity"] in ("P1", "P0"):
+                        st.warning(f"Bug #{i}: {label}")
+                    else:
+                        st.info(f"Bug #{i}: {label}")
+
+            # ── Stage 3: Escalation Handler ──────────────────────────────────
+            escalation = escalation_handler(triage_results)
+
+            with st.expander("Stage 3 — Escalation Handler", expanded=True):
+                e1, e2, e3 = st.columns(3)
+                e1.metric("Incidents", len(escalation["incidents"]), delta="Page on-call" if escalation["incidents"] else None)
+                e2.metric("Need Lead", len(escalation["leads"]))
+                e3.metric("Routine", len(escalation["routine"]))
+
+                if escalation["incident_drafts"]:
+                    st.subheader("Incident Drafts")
+                    for draft in escalation["incident_drafts"]:
+                        st.markdown(draft)
+                        st.divider()
+
+                if escalation["slack_messages"]:
+                    st.subheader("On-Call Slack Messages")
+                    for msg in escalation["slack_messages"]:
+                        st.code(msg, language=None)
+
+                if escalation["lead_notification"]:
+                    st.subheader("Lead Notification")
+                    st.info(escalation["lead_notification"])
+
+                if not escalation["incidents"] and not escalation["leads"]:
+                    st.success("✅ All bugs triaged to routine queues — no escalation needed.")

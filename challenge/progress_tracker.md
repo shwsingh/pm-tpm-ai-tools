@@ -118,3 +118,32 @@ Lessons:
 - Visual architecture diagrams (left-to-right, color-coded by role, shape-encoded) communicate the system 10x better than text trees
 - A blog post for a TPM/PM audience needs ONE memorable takeaway, not three meta-learnings - the rewrite cut jargon and added a "Monday-morning thing to try"
 - type=module scripts are deferred; DOMContentLoaded has already fired by the time they run (Mermaid render bug, now fixed)
+
+---
+
+## Day 6
+
+Status: COMPLETE
+
+Goal:
+Build an agent orchestration workflow that chains the Day 5 Bug Triage Agent into a 3-stage pipeline: Ingest → Triage → Escalation Handler.
+
+Built:
+- projects/tpm_pm_toolkit/app.py - new Day 6 section with three pipeline stage functions and a Streamlit UI showing each stage expanded
+  - ingest() - validates and normalizes raw bug input
+  - run_triage_stage() - calls the Day 5 triage() function for each valid bug; applies batch P1 escalation rule
+  - escalation_handler() - converts triage labels into actionable artifacts: incident drafts, Slack-style on-call messages, lead notifications
+- agents/agent_workflow.md - orchestration contract with stage-by-stage input/output specs, failure modes, and planned MCP upgrade path
+- README badge -> 6/14; 14_day_plan Day 6 -> Done
+
+Key design decisions:
+1. Each stage is a pure function with a defined input/output contract - composable and independently testable
+2. Escalation artifacts are draft text today; Day 13 MCP wires them to real Slack and Jira
+3. Pipeline stops cleanly at ingest if no valid bugs pass - no empty triage runs
+4. Stage outputs are shown in expandable UI panels so the orchestration is visible, not a black box
+
+Lessons:
+- Orchestration is about the contract between stages, not the stages themselves - get the interfaces right first
+- Showing each pipeline stage in the UI makes the agent's reasoning transparent to a non-technical TPM audience
+- Draft artifacts (incident summaries, Slack messages) are valuable even before MCP wiring - they define the output shape for Day 13
+- A pure function pipeline is easy to test incrementally; adding LLM on Day 9 changes one function, not the pipeline shape

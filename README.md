@@ -7,7 +7,7 @@ A 14-day advanced vibe coding challenge to build an AI-powered TPM/Product Manag
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Streamlit](https://img.shields.io/badge/Built%20with-Streamlit-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
-[![Progress](https://img.shields.io/badge/Progress-5%2F14-brightgreen)](#progress)
+[![Progress](https://img.shields.io/badge/Progress-6%2F14-brightgreen)](#progress)
 [![Blog](https://img.shields.io/badge/Blog-shwsingh.github.io%2Fpm--tpm--ai--tools-1e3a8a)](https://shwsingh.github.io/pm-tpm-ai-tools/)
 
 📝 **Weekly blog:** [shwsingh.github.io/pm-tpm-ai-tools](https://shwsingh.github.io/pm-tpm-ai-tools/)
@@ -69,7 +69,7 @@ streamlit run projects/tpm_pm_toolkit/app.py
 | Day 3  | Launch Risk Skill       | ✅ Complete |
 | Day 4  | PRD Builder Skill       | ✅ Complete |
 | Day 5  | Bug Triage Agent        | ✅ Complete |
-| Day 6  | Agent Workflow          | ☐ Planned  |
+| Day 6  | Agent Workflow          | ✅ Complete |
 | Day 7  | Status Report Skill     | ☐ Planned  |
 | Day 8  | Knowledge Base / RAG    | ☐ Planned  |
 | Day 9  | Feedback Agent          | ☐ Planned  |
@@ -90,6 +90,7 @@ timeline
     Day 3  : First skill spec - launch_risk_analysis
     Day 4  : PRD Builder skill + worked example + critique loop
     Day 5  : Bug Triage Agent (first agent) + design decisions
+    Day 6  : Agent Workflow - 3-stage pipeline (Ingest → Triage → Escalation)
 ```
 
 ### Current architecture (Day 5)
