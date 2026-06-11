@@ -147,3 +147,28 @@ Lessons:
 - Showing each pipeline stage in the UI makes the agent's reasoning transparent to a non-technical TPM audience
 - Draft artifacts (incident summaries, Slack messages) are valuable even before MCP wiring - they define the output shape for Day 13
 - A pure function pipeline is easy to test incrementally; adding LLM on Day 9 changes one function, not the pipeline shape
+
+---
+
+## Day 7
+
+Status: COMPLETE
+
+Goal:
+Build a Status Report Skill that turns raw weekly TPM updates into a structured, exec-ready report and scores it across five quality dimensions.
+
+Built:
+- skills/status_report.md — skill spec with input contract, output format, and 5 eval dimensions: Completeness, Ask Specificity, Status Accuracy, Clarity, Next Week Concreteness
+- projects/tpm_pm_toolkit/app.py — new Day 7 section with structured form input, score_report() heuristic scorer, build_report() formatter, and Streamlit UI showing status color + quality eval + generated report
+- README badge -> 7/14; 14_day_plan Day 7 -> Done
+
+Key design decisions:
+1. Structured form fields (not free text) — produces better output without an LLM; also matches how TPMs actually fill in status templates
+2. Status color derived from content, not user-selected — prevents the common mistake of marking Green when blockers exist
+3. 5 eval dimensions are pass/fail today; Day 11 DeepEval adds numeric scoring against a golden set
+4. Vague ask detection and weak next-week language detection give the TPM specific fix guidance, not just a fail flag
+
+Lessons:
+- Eval dimensions need to be specific enough to fail — "good writing" is not checkable, "no vague asks" is
+- Deriving status from content rather than letting users pick it catches a real TPM antipattern (optimism bias in self-reporting)
+- A form with labeled fields produces more structured output than a single text area, even without an LLM

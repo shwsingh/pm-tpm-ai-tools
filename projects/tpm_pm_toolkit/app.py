@@ -1,3 +1,4 @@
+import re
 import streamlit as st
 
 st.set_page_config(
@@ -592,7 +593,8 @@ st.write(
 
 def ingest(raw_text: str) -> dict:
     """Stage 1 — parse and validate raw input."""
-    bugs = [b.strip() for b in raw_text.split("\n\n") if b.strip()]
+    # Split on any blank line (handles \n\n, \r\n\r\n, or lines with only whitespace)
+    bugs = [b.strip() for b in re.split(r"\n[\s]*\n", raw_text.replace("\r\n", "\n")) if b.strip()]
     valid = [b for b in bugs if len(b) >= 10]
     rejected = [b for b in bugs if len(b) < 10]
     return {
@@ -750,3 +752,171 @@ if st.button("Run Agent Workflow"):
 
                 if not escalation["incidents"] and not escalation["leads"]:
                     st.success("✅ All bugs triaged to routine queues — no escalation needed.")
+
+st.divider()
+
+# ── Day 7: Status Report Skill ───────────────────────────────────────────────
+
+st.markdown('<div class="section-title">📋 Day 7: Status Report Skill</div>', unsafe_allow_html=True)
+
+st.write(
+    "Fill in your weekly updates below. The skill generates a structured, exec-ready "
+    "status report and scores it across five quality dimensions."
+)
+
+BLOCKER_RED_KEYWORDS = ["blocked", "blocker", "on hold", "security hold", "privacy hold",
+                         "p0", "p1", "missed milestone", "overdue", "escalation needed"]
+RISK_YELLOW_KEYWORDS = ["at risk", "risk", "delay", "delayed", "pending", "dependency",
+                         "waiting", "review needed", "may slip", "concern"]
+VAGUE_ASK_WORDS = ["help", "look at", "should review", "need support", "need input",
+                    "leadership attention", "someone should"]
+WEAK_NEXT_WEEK_WORDS = ["continue", "work on", "progress", "keep working", "ongoing",
+                         "follow up", "look into"]
+
+def score_report(team, shipped, blockers, risks, asks, next_week):
+    """Score a status report across the 5 eval dimensions. Returns scores dict + status color."""
+    scores = {}
+    notes = {}
+
+    # 1. Completeness
+    fields = {"Team/Launch": team, "Shipped": shipped, "Next Week": next_week}
+    empty = [k for k, v in fields.items() if not v.strip()]
+    scores["Completeness"] = len(empty) == 0
+    notes["Completeness"] = f"Missing: {', '.join(empty)}" if empty else "All required fields filled"
+
+    # 2. Ask Specificity
+    if not asks.strip() or asks.strip().lower() in ("none", "n/a", "no asks"):
+        scores["Ask Specificity"] = True
+        notes["Ask Specificity"] = "No asks this week"
+    else:
+        vague = [w for w in VAGUE_ASK_WORDS if w in asks.lower()]
+        scores["Ask Specificity"] = len(vague) == 0
+        notes["Ask Specificity"] = f"Vague language detected: {', '.join(vague)}" if vague else "Asks appear specific"
+
+    # 3. Status Accuracy (evaluated after color is determined below)
+    blocker_lower = blockers.lower()
+    risk_lower = risks.lower()
+    has_blocker = any(k in blocker_lower for k in BLOCKER_RED_KEYWORDS) and blockers.strip().lower() not in ("none", "n/a", "no blockers")
+    has_risk = any(k in risk_lower for k in RISK_YELLOW_KEYWORDS) and risks.strip().lower() not in ("none", "n/a", "no risks")
+
+    if has_blocker:
+        status = "Red"
+    elif has_risk:
+        status = "Yellow"
+    else:
+        status = "Green"
+
+    scores["Status Accuracy"] = True  # always accurate since we derive it from content
+    notes["Status Accuracy"] = f"Status derived from content — {status} is consistent"
+
+    # 4. Clarity — flag unexplained all-caps acronyms (3+ chars)
+    import re as _re
+    all_text = " ".join([shipped, blockers, risks, asks, next_week])
+    acronyms = _re.findall(r'\b[A-Z]{3,}\b', all_text)
+    known = {"TPM", "PM", "PRD", "API", "SDK", "MCP", "RAG", "NLP", "ETL", "SLA",
+             "PII", "P0", "P1", "P2", "P3", "UI", "UX", "QA", "MVP", "OKR", "KPI",
+             "ETA", "EOD", "EOW", "LGTM", "WIP", "TBD", "TBD", "VP", "IC", "iOS"}
+    unexplained = list(set(a for a in acronyms if a not in known))
+    scores["Clarity"] = len(unexplained) == 0
+    notes["Clarity"] = f"Unexplained acronyms: {', '.join(unexplained)}" if unexplained else "No unexplained acronyms detected"
+
+    # 5. Next Week Concreteness
+    weak = [w for w in WEAK_NEXT_WEEK_WORDS if w in next_week.lower()]
+    scores["Next Week Concreteness"] = len(weak) == 0
+    notes["Next Week Concreteness"] = f"Weak language: {', '.join(weak)}" if weak else "Next week items appear concrete"
+
+    return scores, notes, status
+
+
+def build_report(team, shipped, blockers, risks, asks, next_week, status, week_of):
+    """Assemble the formatted exec report string."""
+    sep = "━" * 42
+
+    def bullets(text):
+        if not text.strip() or text.strip().lower() in ("none", "n/a"):
+            return "• None"
+        lines = [l.strip("•- ").strip() for l in text.strip().splitlines() if l.strip()]
+        return "\n".join(f"• {l}" for l in lines)
+
+    icon = {"Red": "🔴", "Yellow": "🟡", "Green": "🟢"}[status]
+
+    summary_map = {
+        "Red": f"{team} is currently blocked and needs leadership action to stay on track.",
+        "Yellow": f"{team} is progressing with risks that should be monitored this week.",
+        "Green": f"{team} is on track — no blockers or risks to flag this week.",
+    }
+
+    return f"""{sep}
+WEEKLY STATUS REPORT
+Team / Launch: {team}
+Week of: {week_of}
+Overall Status: {icon} {status}
+{sep}
+
+THIS WEEK
+{bullets(shipped)}
+
+BLOCKERS
+{bullets(blockers)}
+
+RISKS
+{bullets(risks)}
+
+ASKS
+{bullets(asks)}
+
+NEXT WEEK
+{bullets(next_week)}
+
+SUMMARY
+{summary_map[status]}
+{sep}"""
+
+
+with st.form("status_report_form"):
+    sr_team = st.text_input("Team / Launch Name", placeholder="e.g. Checkout v2 Launch")
+    sr_week = st.text_input("Week of", placeholder="e.g. June 9–13, 2026")
+    sr_shipped = st.text_area("What shipped this week", height=100,
+        placeholder="e.g. Completed auth integration\nFixed P1 checkout bug on iOS")
+    sr_blockers = st.text_area("Blockers", height=80,
+        placeholder="e.g. Security review on hold — waiting for approval from InfoSec team\nOr: None")
+    sr_risks = st.text_area("Risks", height=80,
+        placeholder="e.g. Third-party API dependency may delay launch by 1 week\nOr: None")
+    sr_asks = st.text_area("Asks from leadership", height=80,
+        placeholder="e.g. Approve launch exception for known P2 bug by June 13\nOr: None")
+    sr_next = st.text_area("Next week plan", height=100,
+        placeholder="e.g. Ship staging build to QA by Wednesday\nComplete load testing and sign off by Friday")
+    submitted = st.form_submit_button("Generate Status Report")
+
+if submitted:
+    if not sr_team.strip() or not sr_shipped.strip() or not sr_next.strip():
+        st.warning("Team name, shipped work, and next week plan are required.")
+    else:
+        scores, notes, status = score_report(sr_team, sr_shipped, sr_blockers, sr_risks, sr_asks, sr_next)
+        week_label = sr_week.strip() if sr_week.strip() else "Week not specified"
+        report = build_report(sr_team, sr_shipped, sr_blockers, sr_risks, sr_asks, sr_next, status, week_label)
+
+        # Status banner
+        if status == "Red":
+            st.error("🔴 Red — Active blockers detected. Leadership action needed.")
+        elif status == "Yellow":
+            st.warning("🟡 Yellow — Risks present. Monitor closely.")
+        else:
+            st.success("🟢 Green — On track. No blockers or risks.")
+
+        # Eval scores
+        st.subheader("Quality Eval")
+        all_pass = all(scores.values())
+        ec1, ec2, ec3, ec4, ec5 = st.columns(5)
+        for col, (dim, passed) in zip([ec1, ec2, ec3, ec4, ec5], scores.items()):
+            col.metric(dim, "✅ Pass" if passed else "❌ Fail")
+
+        if all_pass:
+            st.success("✅ Exec-Ready — all five quality dimensions pass.")
+        else:
+            failed = [f"**{d}**: {notes[d]}" for d, p in scores.items() if not p]
+            st.warning("⚠️ Not Exec-Ready — fix before sending:\n\n" + "\n\n".join(failed))
+
+        # Report
+        st.subheader("Generated Report")
+        st.code(report, language=None)
