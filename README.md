@@ -103,13 +103,14 @@ flowchart LR
     User(["TPM / PM"]):::user
 
     LRA["Launch Risk Analyzer<br/>Day 2"]:::ui
+    D5["Bug Triage Agent<br/>Day 5"]:::ui
     WF["Agent Workflow<br/>Day 6"]:::ui
     SR["Status Report<br/>Day 7"]:::ui
     KB["Knowledge Base<br/>Day 8"]:::ui
     FA["Feedback Agent<br/>Day 9"]:::ui
 
     PIPE["3-Stage Pipeline<br/>Ingest -- Triage -- Escalation"]:::agent
-    BTA["Bug Triage Agent"]:::agent
+    BTA["triage_with_claude()"]:::agent
     CLAUDE[("Claude API<br/>claude-sonnet-4-6")]:::llm
 
     S_LR[/"skill: launch_risk_analysis"/]:::skill
@@ -122,15 +123,17 @@ flowchart LR
     CHUNKS[("Doc Chunks<br/>txt / md / docx / csv")]:::store
 
     User --> LRA
+    User --> D5
     User --> WF
     User --> SR
     User --> KB
     User --> FA
 
     LRA --> S_LR
+    D5 --> BTA
+    D5 --> S_BUG
     WF --> PIPE
     PIPE --> BTA
-    BTA --> S_BUG
     BTA --> CLAUDE
     PIPE --> SS
     SS --> SR
