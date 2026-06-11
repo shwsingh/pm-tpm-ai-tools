@@ -172,3 +172,31 @@ Lessons:
 - Eval dimensions need to be specific enough to fail — "good writing" is not checkable, "no vague asks" is
 - Deriving status from content rather than letting users pick it catches a real TPM antipattern (optimism bias in self-reporting)
 - A form with labeled fields produces more structured output than a single text area, even without an LLM
+
+---
+
+## Day 8
+
+Status: COMPLETE
+
+Goal:
+Build a Knowledge Base skill that lets TPMs upload documents and search them by question — the heuristic foundation for RAG.
+
+Built:
+- skills/knowledge_base.md — RAG skill spec with chunking strategy, retrieval contract, eval rules, and upgrade path to embeddings on Day 9
+- projects/tpm_pm_toolkit/app.py — new Day 8 section with extract_text_chunks() (txt/md/docx/csv), keyword_search() scorer, and Streamlit upload + search UI
+- python-docx installed to support .docx (Google Docs export) directly
+- README architecture diagram updated to Day 8; timeline updated; badge -> 8/14; 14_day_plan Day 8 -> Done
+
+Supported formats: .txt, .md, .docx (via python-docx), .csv (via pandas)
+
+Key design decisions:
+1. Chunk by paragraph for text/docx, by row for CSV — matches how TPMs structure their docs
+2. Keyword overlap score (hits / total query tokens) gives a simple 0–1 relevance signal
+3. Session state stores chunks — no persistent DB needed today; Day 9 upgrades to embeddings
+4. .docx support added immediately (one pip install) since Google Docs is the primary TPM format
+
+Lessons:
+- Chunking strategy matters more than the retrieval algorithm at this scale — bad chunks produce bad results regardless of the scorer
+- CSV row-as-chunk with headers prepended gives enough context for keyword matching to work
+- The heuristic retrieval contract (source, text, score) is stable — Day 9 replaces the scorer, not the interface

@@ -1008,3 +1008,117 @@ if preview_clicked:
 
         if st.session_state.get("finalized_report") == report:
             st.balloons()
+
+st.divider()
+
+# ── Day 8: Knowledge Base (RAG) ──────────────────────────────────────────────
+
+st.markdown('<div class="section-title">📚 Day 8: Knowledge Base</div>', unsafe_allow_html=True)
+
+st.write(
+    "Upload TPM docs and search them by question. "
+    "Supported formats: `.txt`, `.md`, `.docx`, `.csv` (Google Sheets export). "
+    "Today retrieval is keyword-based — Day 9 upgrades to embedding search with Claude."
+)
+
+
+def extract_text_chunks(uploaded_file) -> list[dict]:
+    """Extract text chunks from an uploaded file. Returns list of {source, text} dicts."""
+    name = uploaded_file.name
+    ext = name.rsplit(".", 1)[-1].lower()
+    chunks = []
+
+    if ext in ("txt", "md"):
+        content = uploaded_file.read().decode("utf-8", errors="ignore")
+        paragraphs = re.split(r"\n\s*\n", content)
+        for p in paragraphs:
+            p = p.strip()
+            if len(p) >= 20:
+                chunks.append({"source": name, "text": p})
+
+    elif ext == "docx":
+        import docx as _docx
+        import io
+        doc = _docx.Document(io.BytesIO(uploaded_file.read()))
+        for para in doc.paragraphs:
+            p = para.text.strip()
+            if len(p) >= 20:
+                chunks.append({"source": name, "text": p})
+
+    elif ext == "csv":
+        import io
+        import pandas as _pd
+        df = _pd.read_csv(io.BytesIO(uploaded_file.read()))
+        headers = " | ".join(str(c) for c in df.columns)
+        for _, row in df.iterrows():
+            row_text = " | ".join(str(v) for v in row.values)
+            text = f"{headers}\n{row_text}"
+            if len(text) >= 20:
+                chunks.append({"source": name, "text": text})
+
+    return chunks
+
+
+def keyword_search(chunks: list[dict], query: str, top_n: int = 5) -> list[dict]:
+    """Score chunks by keyword overlap with query. Returns top_n results."""
+    query_tokens = set(re.sub(r"[^\w\s]", "", query.lower()).split())
+    if not query_tokens:
+        return []
+
+    scored = []
+    for chunk in chunks:
+        chunk_lower = chunk["text"].lower()
+        hits = sum(1 for t in query_tokens if t in chunk_lower)
+        if hits > 0:
+            score = round(hits / len(query_tokens), 2)
+            scored.append({**chunk, "score": score, "hits": hits})
+
+    scored.sort(key=lambda x: x["score"], reverse=True)
+    return scored[:top_n]
+
+
+# Upload
+uploaded_files = st.file_uploader(
+    "Upload documents",
+    type=["txt", "md", "docx", "csv"],
+    accept_multiple_files=True,
+    help="Google Docs → File → Download → Word (.docx) | Google Sheets → File → Download → CSV"
+)
+
+if uploaded_files:
+    all_chunks = []
+    for f in uploaded_files:
+        chunks = extract_text_chunks(f)
+        all_chunks.extend(chunks)
+        st.caption(f"✅ {f.name} — {len(chunks)} chunk(s) indexed")
+
+    st.session_state["kb_chunks"] = all_chunks
+    st.success(f"📖 {len(all_chunks)} chunks indexed from {len(uploaded_files)} document(s)")
+
+kb_chunks = st.session_state.get("kb_chunks", [])
+
+query = st.text_input(
+    "Ask a question",
+    placeholder="e.g. What are the launch blockers? Who owns the auth component?",
+    disabled=len(kb_chunks) == 0
+)
+
+if query and kb_chunks:
+    results = keyword_search(kb_chunks, query)
+
+    if not results:
+        st.warning("No matching chunks found. Try different keywords.")
+    else:
+        sources = list(dict.fromkeys(r["source"] for r in results))
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Chunks Returned", len(results))
+        c2.metric("Documents Searched", len(set(c["source"] for c in kb_chunks)))
+        c3.metric("Top Source", results[0]["source"])
+
+        st.subheader(f"Top {len(results)} Results")
+        for i, r in enumerate(results, 1):
+            with st.expander(f"[{i}] {r['source']} — Score: {r['score']}", expanded=i == 1):
+                st.write(r["text"])
+
+elif len(kb_chunks) == 0 and not uploaded_files:
+    st.info("Upload at least one document to enable search.")
