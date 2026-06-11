@@ -98,55 +98,54 @@ timeline
 ### Current architecture (Day 8)
 
 ```mermaid
-flowchart LR
-    User(["TPM / PM<br/>user"]):::user
+flowchart TB
+    User(["👤 TPM / PM"]):::user
 
-    subgraph APP["Streamlit App"]
+    subgraph APP["Streamlit App — app.py"]
         direction TB
-        LRA(["Launch Risk<br/>Analyzer"]):::ui
-        WF(["Agent Workflow<br/>Day 6"]):::ui
-        SR(["Status Report<br/>Day 7"]):::ui
-        KB(["Knowledge Base<br/>Day 8"]):::ui
+        LRA(["🚦 Launch Risk Analyzer\nDay 2"]):::ui
+        WF(["⚙️ Agent Workflow\nDay 6"]):::ui
+        SR(["📋 Status Report\nDay 7"]):::ui
+        KB(["📚 Knowledge Base\nDay 8"]):::ui
     end
 
-    BTA["Bug Triage Agent"]:::agent
-    PIPE["3-Stage Pipeline<br/>Ingest→Triage→Escalation"]:::agent
+    subgraph AGENTS["Agents"]
+        PIPE["3-Stage Pipeline\nIngest → Triage → Escalation"]:::agent
+        BTA["Bug Triage Agent"]:::agent
+    end
 
-    subgraph SKILLS["Skills (markdown specs)"]
+    subgraph SKILLS["Skills"]
         S_LR[("launch_risk_analysis")]:::skill
-        S_PRD[("prd_builder")]:::skill
         S_BUG[("bug_triage")]:::skill
         S_SR[("status_report")]:::skill
         S_KB[("knowledge_base")]:::skill
     end
 
-    subgraph KB_STORE["Knowledge Base (session)"]
-        CHUNKS[("Indexed chunks<br/>txt · md · docx · csv")]:::store
+    subgraph DATA["Data (session)"]
+        SS[("Session State")]:::store
+        CHUNKS[("Doc Chunks\ntxt · md · docx · csv")]:::store
     end
-
-    SS["Session State<br/>pipeline → status report"]:::store
 
     User --> APP
     WF --> PIPE
     PIPE --> BTA
-    BTA -. uses .-> S_BUG
     PIPE --> SS
-    SS -. auto-populates .-> SR
-    SR -. follows spec .-> S_SR
+    SS --> SR
     KB --> CHUNKS
-    CHUNKS -. keyword search .-> KB
-    KB -. follows spec .-> S_KB
-    LRA -. follows spec .-> S_LR
+    BTA -. uses .-> S_BUG
+    LRA -. uses .-> S_LR
+    SR -. uses .-> S_SR
+    KB -. uses .-> S_KB
     APP --> User
 
-    classDef user fill:#1e293b,stroke:#0f172a,color:#fff,font-weight:bold
+    classDef user fill:#1e293b,stroke:#2563eb,color:#fff,font-weight:bold
     classDef ui fill:#fef3c7,stroke:#a16207,color:#0f172a
     classDef agent fill:#dcfce7,stroke:#166534,color:#0f172a,font-weight:bold
     classDef skill fill:#dbeafe,stroke:#1e40af,color:#0f172a
     classDef store fill:#ede9fe,stroke:#6d28d9,color:#0f172a
 ```
 
-**Legend** — yellow = UI section, green = agent, blue cylinder = skill spec, navy = user, purple = data store / session state.
+**Legend** — yellow = UI, green = agent, blue = skill spec, purple = data/session, navy = user.
 
 Full per-day delta diagrams, planned-future layer, mindmap, and Gantt → [`challenge/project_evolution.md`](challenge/project_evolution.md).
 
