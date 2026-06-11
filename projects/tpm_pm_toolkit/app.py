@@ -360,8 +360,7 @@ st.markdown('<div class="section-title">🐞 Day 5: Bug Triage Agent</div>', uns
 
 st.write(
     "Paste one or more bug reports. The agent classifies severity, suggests an owner, "
-    "and decides whether to escalate to an incident or route to the lead for discussion. "
-    "Today the classifier is heuristic; the LLM-backed version ships on Day 9."
+    "and decides whether to escalate to an incident or route to the lead for discussion."
 )
 
 P0_KEYWORDS = ["outage", "down", "data loss", "data corruption", "security breach", "pii leak", "revenue stop", "payment failure"]
@@ -568,8 +567,13 @@ if st.button("Triage Bugs"):
     if not bug_input.strip():
         st.warning("Please paste at least one bug report.")
     else:
-        bugs = [b.strip() for b in bug_input.split("\n\n") if b.strip()]
-        results = [triage(b) for b in bugs]
+        bugs = [b.strip() for b in re.split(r"\n[\s]*\n", bug_input.replace("\r\n", "\n")) if b.strip()]
+        if ANTHROPIC_API_KEY:
+            st.caption("🤖 Triage powered by Claude (Day 9)")
+            results = [triage_with_claude(b, ANTHROPIC_API_KEY) for b in bugs]
+        else:
+            st.caption("⚙️ Triage using heuristic classifier — add API key in .env for Claude-powered triage")
+            results = [triage(b) for b in bugs]
 
         p1_batch_count = sum(1 for r in results if r["severity"] == "P1")
         if p1_batch_count > 2:
