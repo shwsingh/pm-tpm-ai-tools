@@ -105,23 +105,24 @@ with st.sidebar:
     st.title("🏆 Challenge Progress")
     st.caption("TPM/PM AI Toolkit Build Journey")
 
-    st.progress(0.65)
-    st.metric("Overall Progress", "65%", "+15% this week")
+    st.progress(9 / 14)
+    st.metric("Overall Progress", "9 / 14 days", "+1 today")
 
     st.divider()
 
     st.subheader("✅ Completed")
-    st.write("• Streamlit setup")
-    st.write("• Toolkit structure")
-    st.write("• Core feature cards")
-
-    st.subheader("🚧 In Progress")
-    st.write("• AI workflows")
-    st.write("• Executive dashboard")
-    st.write("• Polished UX")
+    st.write("• Day 1 — TPM Dashboard")
+    st.write("• Day 2 — Launch Risk Analyzer")
+    st.write("• Day 3 — Launch Risk Skill")
+    st.write("• Day 4 — PRD Builder Skill")
+    st.write("• Day 5 — Bug Triage Agent")
+    st.write("• Day 6 — Agent Workflow Pipeline")
+    st.write("• Day 7 — Status Report Skill")
+    st.write("• Day 8 — Knowledge Base (RAG)")
+    st.write("• Day 9 — Feedback Agent + Claude triage")
 
     st.subheader("🎯 Next Milestone")
-    st.info("Build the first working AI-powered TPM workflow.")
+    st.info("Day 10 — Dependency Agent: cross-team dependency tracking with agent reasoning.")
 
 # Header
 st.markdown("""
