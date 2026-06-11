@@ -54,7 +54,7 @@ python -m venv venv
 source venv/bin/activate        # On Windows: venv\Scripts\activate
 
 # 3. Install dependencies
-pip install streamlit
+pip install streamlit python-docx pandas
 
 # 4. Run the app
 streamlit run projects/tpm_pm_toolkit/app.py
@@ -147,123 +147,123 @@ Full per-day delta diagrams, planned-future layer, mindmap, and Gantt → [`chal
 
 ```
 pm-tpm-ai-tools/
-├── challenge/                  # 14-day challenge plan & tracking
+├── projects/
+│   └── tpm_pm_toolkit/
+│       └── app.py                        # Single-file Streamlit app (all Days 1-8)
+│
+├── skills/                               # Reusable AI skill specs (markdown)
+│   ├── launch_risk_analysis.md           # Day 3
+│   ├── prd_builder.md                    # Day 4
+│   ├── bug_triage.md                     # Day 5
+│   ├── status_report.md                  # Day 7
+│   └── knowledge_base.md                 # Day 8
+│
+├── agents/                               # Agent contracts
+│   ├── bug_triage_agent.md               # Day 5
+│   └── agent_workflow.md                 # Day 6
+│
+├── challenge/                            # Challenge tracking
 │   ├── 14_day_plan.md
 │   ├── progress_tracker.md
-│   └── project_evolution.md   # Visual diagrams: timeline, architecture, mindmap, Gantt
-├── demos/                      # Demo recordings and assets
-├── lessons_learned/            # Notes from each day's build
-│   ├── common_errors.md
-│   └── day1_day2_lessons.md
-├── mcp_servers/
-│   └── tpm_copilot_mcp/       # MCP server for TPM workflows
-├── notes/                      # Working notes
-├── projects/
-│   └── tpm_pm_toolkit/         # The Streamlit application
-│       └── app.py
-├── agents/                     # Agent contracts (planner, tools, escalation)
-│   └── bug_triage_agent.md
-├── design_decisions/           # Per-day design choices with pros/cons
+│   └── project_evolution.md              # Visual diagrams: timeline, Gantt, mindmap
+│
+├── design_decisions/                     # Per-day design choices with pros/cons
 │   └── day5_bug_triage_agent.md
-├── examples/                   # Worked examples produced by skills
+│
+├── examples/                             # Worked examples produced by skills
 │   └── prd_ai_tpm_copilot.md
-├── skills/                     # Reusable AI skill definitions
-│   ├── bug_triage.md
-│   ├── launch_risk_analysis.md
-│   └── prd_builder.md
+│
+├── lessons_learned/                      # Post-day learnings
+│   ├── day1_day2_lessons.md
+│   ├── day3_day4_lessons.md
+│   ├── day5_lessons.md
+│   └── common_errors.md
+│
+├── notes/
+│   └── day4_prd_critique.md
+│
+├── mcp_servers/                          # MCP server skeleton (Day 13)
+│   └── tpm_copilot_mcp/
+│       ├── server.py
+│       └── data/
+│           ├── launch_checklist.md
+│           ├── risk_register.md
+│           └── capacity_plan.md
+│
+├── docs/                                 # GitHub Pages blog
+│   ├── _posts/
+│   │   └── 2026-06-09-week1-ai-tpm-copilot.md
+│   └── assets/images/
+│       └── hero-week1.svg
+│
+├── CLAUDE.md
 ├── LICENSE
 └── README.md
 ```
-## Planned Advanced Capabilities
-
-### TPM MCP Server
-
-The MCP server will expose:
-
-#### Resources
-* Launch Checklist
-* Risk Register
-* Capacity Plan
-
-#### Tools
-* Launch Risk Analysis
-* Executive Status Generation
-* Escalation Creation
-
-#### Prompts
-* Launch Readiness Review
-* Weekly Executive Update
-* Capacity Review
-
-## Documentation
-
-### Skills
-
-Reusable AI skill definitions live in [`skills/`](skills/).
-
-### Challenge Roadmap
-
-See [`challenge/14_day_plan.md`](challenge/14_day_plan.md).
-
-### Lessons Learned
-
-See [`lessons_learned/day1_day2_lessons.md`](lessons_learned/day1_day2_lessons.md).
-
-### Common Errors & Fixes
-
-See [`lessons_learned/common_errors.md`](lessons_learned/common_errors.md).
-
-## Planned Advanced Capabilities
-
-### MCP Server
-
-A TPM-focused MCP server exposing:
-
-#### Resources
-- Launch Checklist
-- Risk Register
-- Capacity Plan
-
-#### Tools
-- Launch Risk Analysis
-- Executive Status Generation
-- Escalation Creation
-
-#### Prompts
-- Launch Readiness Review
-- Weekly Executive Update
-- Capacity Review
-
-This demonstrates practical application of MCP for enterprise TPM workflows and agentic AI systems.
 
 ## Current Application
 
 Location: [`projects/tpm_pm_toolkit/app.py`](projects/tpm_pm_toolkit/app.py)
 
-Current Features:
-
-* TPM Dashboard Homepage
-* Launch Risk Analyzer
-* Risk Detection
-* Executive Summary
-* Launch Health Assessment
-* Launch Risk Analysis Skill
-* PRD Builder Skill
-* Bug Triage Agent (heuristic, LLM-swap stub for Day 9)
+| Day | Feature | What it does |
+|-----|---------|-------------|
+| Day 1 | TPM Dashboard | Homepage with toolkit module cards |
+| Day 2 | Launch Risk Analyzer | Keyword-based launch health assessment with exec summary |
+| Day 5 | Bug Triage Agent | Classifies severity, assigns owner, escalates incidents |
+| Day 6 | Agent Workflow | 3-stage pipeline: Ingest → Triage → Escalation Handler with draft artifacts |
+| Day 7 | Status Report | Auto-populates from pipeline, 5-dimension quality eval, human confirm flow |
+| Day 8 | Knowledge Base | Upload `.txt`, `.md`, `.docx`, `.csv` and search by keyword |
 
 ## Tech Stack
 
-* Python
-* Streamlit
-* Git
-* GitHub
-* VS Code
-* AI Coding Assistants
-* MCP (Model Context Protocol)
-* Agentic AI
+| Layer | Technology |
+|-------|-----------|
+| App framework | Streamlit |
+| Language | Python 3.10+ |
+| Document parsing | python-docx (Word/Google Docs), pandas (CSV/Sheets) |
+| Data flow | Streamlit session state |
+| Skills & agents | Markdown specs (prompt-style contracts) |
+| Blog | GitHub Pages (Minimal Mistakes theme) |
+| Version control | Git + GitHub |
+| AI (Day 9+) | Claude API (Anthropic) |
+| MCP (Day 13) | Model Context Protocol |
+
+## Planned Advanced Capabilities
+
+### Days 9–14 Roadmap
+
+| Day | Capability | What gets added |
+|-----|-----------|----------------|
+| Day 9  | Feedback Agent | Claude replaces heuristic triage classifier |
+| Day 10 | Dependency Agent | Cross-team dependency tracking with agent reasoning |
+| Day 11 | Evaluation Framework | DeepEval scoring against golden sets |
+| Day 12 | Multi-Agent System | Agents orchestrating other agents (A2A) |
+| Day 13 | MCP Integration | GitHub, Jira, Slack tool calling |
+| Day 14 | Executive TPM Copilot | Full end-to-end demo system |
+
+### TPM MCP Server (Day 13)
+
+The MCP server will expose:
+
+**Resources** — Launch Checklist, Risk Register, Capacity Plan
+
+**Tools** — Launch Risk Analysis, Executive Status Generation, Escalation Creation
+
+**Prompts** — Launch Readiness Review, Weekly Executive Update, Capacity Review
+
+## Documentation
+
+| Resource | Location |
+|----------|---------|
+| 14-day plan | [`challenge/14_day_plan.md`](challenge/14_day_plan.md) |
+| Progress tracker | [`challenge/progress_tracker.md`](challenge/progress_tracker.md) |
+| Visual diagrams | [`challenge/project_evolution.md`](challenge/project_evolution.md) |
+| Lessons learned | [`lessons_learned/`](lessons_learned/) |
+| Common errors | [`lessons_learned/common_errors.md`](lessons_learned/common_errors.md) |
+| Weekly blog | [shwsingh.github.io/pm-tpm-ai-tools](https://shwsingh.github.io/pm-tpm-ai-tools/) |
 
 ## Author
 
-**Shweta Singh**
+**Shweta Singh** — Senior Manager, TPM at Google
 
 Building an AI TPM Copilot through a 14-day advanced vibe coding challenge.
