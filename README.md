@@ -98,51 +98,45 @@ timeline
 ### Current architecture (Day 8)
 
 ```mermaid
-flowchart TB
-    User(["👤 TPM / PM"]):::user
+flowchart LR
+    User(["TPM / PM"]):::user
 
-    subgraph APP["Streamlit App — app.py"]
-        direction TB
-        LRA(["🚦 Launch Risk Analyzer\nDay 2"]):::ui
-        WF(["⚙️ Agent Workflow\nDay 6"]):::ui
-        SR(["📋 Status Report\nDay 7"]):::ui
-        KB(["📚 Knowledge Base\nDay 8"]):::ui
-    end
+    LRA["Launch Risk Analyzer<br/>Day 2"]:::ui
+    WF["Agent Workflow<br/>Day 6"]:::ui
+    SR["Status Report<br/>Day 7"]:::ui
+    KB["Knowledge Base<br/>Day 8"]:::ui
 
-    subgraph AGENTS["Agents"]
-        PIPE["3-Stage Pipeline\nIngest → Triage → Escalation"]:::agent
-        BTA["Bug Triage Agent"]:::agent
-    end
+    PIPE["3-Stage Pipeline<br/>Ingest -- Triage -- Escalation"]:::agent
+    BTA["Bug Triage Agent"]:::agent
 
-    subgraph SKILLS["Skills"]
-        S_LR[("launch_risk_analysis")]:::skill
-        S_BUG[("bug_triage")]:::skill
-        S_SR[("status_report")]:::skill
-        S_KB[("knowledge_base")]:::skill
-    end
+    S_LR[/"skill: launch_risk_analysis"/]:::skill
+    S_BUG[/"skill: bug_triage"/]:::skill
+    S_SR[/"skill: status_report"/]:::skill
+    S_KB[/"skill: knowledge_base"/]:::skill
 
-    subgraph DATA["Data (session)"]
-        SS[("Session State")]:::store
-        CHUNKS[("Doc Chunks\ntxt · md · docx · csv")]:::store
-    end
+    SS[("Session State")]:::store
+    CHUNKS[("Doc Chunks<br/>txt / md / docx / csv")]:::store
 
-    User --> APP
+    User --> LRA
+    User --> WF
+    User --> SR
+    User --> KB
+
+    LRA --> S_LR
     WF --> PIPE
     PIPE --> BTA
+    BTA --> S_BUG
     PIPE --> SS
     SS --> SR
+    SR --> S_SR
     KB --> CHUNKS
-    BTA -. uses .-> S_BUG
-    LRA -. uses .-> S_LR
-    SR -. uses .-> S_SR
-    KB -. uses .-> S_KB
-    APP --> User
+    KB --> S_KB
 
-    classDef user fill:#1e293b,stroke:#2563eb,color:#fff,font-weight:bold
-    classDef ui fill:#fef3c7,stroke:#a16207,color:#0f172a
-    classDef agent fill:#dcfce7,stroke:#166534,color:#0f172a,font-weight:bold
-    classDef skill fill:#dbeafe,stroke:#1e40af,color:#0f172a
-    classDef store fill:#ede9fe,stroke:#6d28d9,color:#0f172a
+    classDef user fill:#1e293b,stroke:#60a5fa,color:#f8fafc,font-weight:bold
+    classDef ui fill:#a16207,stroke:#fde68a,color:#fffbeb,font-weight:bold
+    classDef agent fill:#166534,stroke:#86efac,color:#f0fdf4,font-weight:bold
+    classDef skill fill:#1e40af,stroke:#93c5fd,color:#eff6ff
+    classDef store fill:#6d28d9,stroke:#c4b5fd,color:#f5f3ff
 ```
 
 **Legend** — yellow = UI, green = agent, blue = skill spec, purple = data/session, navy = user.
