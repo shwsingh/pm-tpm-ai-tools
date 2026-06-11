@@ -32,27 +32,27 @@ st.markdown("""
     }
 
     .card {
-        background: white;
+        background: #1e293b;
         padding: 24px;
         border-radius: 20px;
-        border: 1px solid #e5e7eb;
-        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+        border: 1px solid #334155;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
         min-height: 185px;
         transition: 0.2s ease-in-out;
     }
 
     .card:hover {
         transform: translateY(-4px);
-        box-shadow: 0 14px 36px rgba(15, 23, 42, 0.12);
+        box-shadow: 0 14px 36px rgba(0, 0, 0, 0.3);
     }
 
     .card h3 {
         margin-top: 0;
-        color: #0f172a;
+        color: #f1f5f9;
     }
 
     .card p {
-        color: #475569;
+        color: #94a3b8;
         font-size: 15px;
     }
 
@@ -70,20 +70,25 @@ st.markdown("""
     .section-title {
         font-size: 26px;
         font-weight: 700;
-        color: #0f172a;
+        color: #f1f5f9;
         margin-top: 16px;
         margin-bottom: 16px;
     }
 
     .goal-box {
-        background: #ffffff;
+        background: #1e3a5f;
         border-left: 6px solid #2563eb;
         padding: 18px 22px;
         border-radius: 16px;
-        border-top: 1px solid #e5e7eb;
-        border-right: 1px solid #e5e7eb;
-        border-bottom: 1px solid #e5e7eb;
+        border-top: 1px solid #2d5a8e;
+        border-right: 1px solid #2d5a8e;
+        border-bottom: 1px solid #2d5a8e;
         margin-bottom: 12px;
+        color: #e2e8f0;
+    }
+
+    .goal-box b {
+        color: #ffffff;
     }
 </style>
 """, unsafe_allow_html=True)
