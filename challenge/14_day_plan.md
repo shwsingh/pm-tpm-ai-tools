@@ -14,7 +14,7 @@ Build an AI-powered TPM Copilot that can analyze launch health, risks, blockers,
 | Day 6 | Agent Workflow | Bug to triage to escalation | Agent Orchestration | ✅ Done |
 | Day 7 | Status Report Skill | Weekly exec report generator | Summarization | ✅ Done |
 | Day 8 | Knowledge Base | Upload/search TPM docs | RAG | ✅ Done |
-| Day 9 | Feedback Agent | Analyze customer feedback | NLP | ☐ |
+| Day 9 | Feedback Agent | Analyze customer feedback | NLP | ✅ Done |
 | Day 10 | Dependency Agent | Track cross-team dependencies | Agent Reasoning | ☐ |
 | Day 11 | Evaluation Framework | Evaluate AI outputs | DeepEval, LLM Eval | ☐ |
 | Day 12 | Multi-Agent System | Agents working together | A2A | ☐ |

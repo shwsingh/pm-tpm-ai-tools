@@ -200,3 +200,34 @@ Lessons:
 - Chunking strategy matters more than the retrieval algorithm at this scale — bad chunks produce bad results regardless of the scorer
 - CSV row-as-chunk with headers prepended gives enough context for keyword matching to work
 - The heuristic retrieval contract (source, text, score) is stable — Day 9 replaces the scorer, not the interface
+
+---
+
+## Day 9
+
+Status: COMPLETE
+
+Goal:
+Make the first real LLM calls in the project: swap the heuristic bug triage classifier for Claude, and build a Feedback Agent that analyzes customer feedback with structured output.
+
+Built:
+- skills/feedback_agent.md — skill spec with per-item output (sentiment, themes, severity, action) and aggregate summary contract
+- projects/tpm_pm_toolkit/app.py
+  - Sidebar API key input (fallback when ANTHROPIC_API_KEY env var not set)
+  - triage_with_claude() — LLM-backed triage with same output contract as heuristic triage(); fallback to heuristic on error
+  - run_triage_stage() updated — uses Claude when API key present, heuristic otherwise; shows mode in UI
+  - Day 9 Feedback Agent section — analyze_feedback() batch request, aggregate metrics, per-item expanders with severity/sentiment icons
+- README badge -> 9/14; 14_day_plan Day 9 -> Done; architecture diagram updated with Claude API node
+
+Key design decisions:
+1. Same output contract for triage_with_claude() as triage() — Day 9 is a swap, not a refactor; pipeline shape unchanged
+2. Graceful fallback: triage_with_claude() catches all exceptions and falls back to heuristic — app never breaks without an API key
+3. Single batch request for feedback analysis — one API call for all items, not per-item calls; cheaper and Claude can spot cross-item patterns
+4. Sidebar API key input with env var precedence — no key hardcoded anywhere; works locally and in deployed environments
+5. JSON-only system prompt with code fence stripping — reliable parsing without asking for markdown
+
+Lessons:
+- The stable output contract from Day 5 paid off on Day 9: swapping triage() for triage_with_claude() required zero changes to the pipeline
+- Asking Claude for pure JSON (no markdown, no explanation) works reliably; the code fence stripper handles the occasional ```json wrapper
+- Batch feedback analysis in one request is better than N per-item calls — Claude can surface cross-item themes it couldn't see in isolation
+- A sidebar API key input is the right UX for a learning project: it never blocks users without a key, and it's obvious where to enter it

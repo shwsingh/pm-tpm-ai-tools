@@ -1,4 +1,6 @@
 import re
+import json
+import os
 import streamlit as st
 
 st.set_page_config(
@@ -6,6 +8,11 @@ st.set_page_config(
     page_icon="🚀",
     layout="wide"
 )
+
+# ── API Key (Day 9+) ──────────────────────────────────────────────────────────
+from dotenv import load_dotenv
+load_dotenv()
+ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 
 st.markdown("""
 <style>
@@ -382,9 +389,53 @@ COMPONENT_MAP = {
 INCIDENT_KEYWORDS = ["outage", "data loss", "security breach", "pii", "revenue stop"]
 AMBIGUITY_KEYWORDS = ["maybe", "sometimes", "not sure", "unclear", "possibly"]
 
+_TRIAGE_SYSTEM = """You are a senior TPM triage assistant. Given a bug report, return ONLY a JSON object
+with these exact keys (no markdown, no explanation):
+{
+  "severity": "P0" | "P1" | "P2" | "P3" | "Unknown",
+  "component": string (e.g. "Auth", "Billing", "Checkout", "Mobile", "API", "Unknown"),
+  "owner": string (team name, or "Shweta (Lead) - needs discussion" if unclear),
+  "priority": "Drop-everything" | "Next-sprint" | "Backlog" | "Needs-lead",
+  "next_action": string (one clear action sentence),
+  "escalate": boolean,
+  "escalate_reason": string (empty string if escalate is false),
+  "needs_lead": boolean,
+  "needs_lead_reason": string (empty string if needs_lead is false),
+  "summary": string (one-line: severity + component + short description)
+}
+
+Severity guide: P0 = production down / data loss / security / billing error / revenue impact.
+P1 = major feature broken, significant user impact. P2 = degraded but workaround exists.
+P3 = minor cosmetic / low impact. Unknown = insufficient info.
+Set needs_lead=true when severity is Unknown, evidence is thin (single vague keyword),
+or component cannot be determined. Set escalate=true only for P0 or confirmed incidents."""
+
+
+def triage_with_claude(bug_text: str, api_key: str) -> dict:
+    """LLM-backed triage using Claude. Same output contract as triage()."""
+    try:
+        import anthropic
+        client = anthropic.Anthropic(api_key=api_key)
+        response = client.messages.create(
+            model="claude-sonnet-4-6",
+            max_tokens=512,
+            system=_TRIAGE_SYSTEM,
+            messages=[{"role": "user", "content": f"Bug report:\n{bug_text.strip()}"}]
+        )
+        raw = response.content[0].text.strip()
+        # Strip markdown code fences if present
+        if raw.startswith("```"):
+            raw = re.sub(r"^```[a-z]*\n?", "", raw)
+            raw = re.sub(r"\n?```$", "", raw)
+        return json.loads(raw)
+    except Exception as e:
+        result = triage(bug_text)
+        result["_llm_error"] = str(e)
+        return result
+
 
 def triage(bug_text: str) -> dict:
-    """Triage a single bug. Heuristic today; LLM-backed on Day 9.
+    """Triage a single bug. Heuristic classifier — kept as fallback for Day 9+.
 
     The contract (input str, output dict with the keys below) is stable so the
     LLM swap-in is a single function replacement.
@@ -609,11 +660,14 @@ def ingest(raw_text: str) -> dict:
     }
 
 
-def run_triage_stage(valid_bugs: list) -> list:
-    """Stage 2 — triage each valid bug using the Day 5 triage() function."""
+def run_triage_stage(valid_bugs: list, api_key: str = "") -> list:
+    """Stage 2 — triage each valid bug. Uses Claude when api_key provided, heuristic otherwise."""
     results = []
     for bug in valid_bugs:
-        r = triage(bug)
+        if api_key:
+            r = triage_with_claude(bug, api_key)
+        else:
+            r = triage(bug)
         r["original_text"] = bug
         results.append(r)
 
@@ -708,9 +762,13 @@ if st.button("Run Agent Workflow"):
             st.error("No valid bugs to process.")
         else:
             # ── Stage 2: Triage ──────────────────────────────────────────────
-            triage_results = run_triage_stage(ingested["valid_bugs"])
+            triage_results = run_triage_stage(ingested["valid_bugs"], api_key=ANTHROPIC_API_KEY)
 
             with st.expander("Stage 2 — Triage", expanded=True):
+                if ANTHROPIC_API_KEY:
+                    st.caption("🤖 Triage powered by Claude (Day 9)")
+                else:
+                    st.caption("⚙️ Triage using heuristic classifier — add API key for Claude-powered triage")
                 sev_counts = {}
                 for r in triage_results:
                     sev_counts[r["severity"]] = sev_counts.get(r["severity"], 0) + 1
@@ -1122,3 +1180,128 @@ if query and kb_chunks:
 
 elif len(kb_chunks) == 0 and not uploaded_files:
     st.info("Upload at least one document to enable search.")
+
+
+# ── Day 9: Feedback Agent ─────────────────────────────────────────────────────
+
+st.markdown('<div class="section-title">💬 Day 9: Feedback Agent</div>', unsafe_allow_html=True)
+
+st.write(
+    "Paste customer feedback (one item per paragraph) and Claude will classify sentiment, "
+    "extract themes, flag critical issues, and recommend TPM actions."
+)
+
+_FEEDBACK_SYSTEM = """You are a senior TPM analyzing customer feedback. Given a list of feedback items,
+return ONLY a JSON object (no markdown, no explanation) with this structure:
+{
+  "items": [
+    {
+      "text_preview": "<first 80 chars of the feedback>",
+      "sentiment": "Positive" | "Negative" | "Neutral" | "Mixed",
+      "themes": ["theme1", "theme2"],
+      "severity": "P0" | "P1" | "P2" | "P3",
+      "action": "Escalate immediately" | "File bug" | "File improvement" | "Monitor" | "No action"
+    }
+  ],
+  "summary": {
+    "total": <int>,
+    "sentiment_counts": {"Positive": <int>, "Negative": <int>, "Neutral": <int>, "Mixed": <int>},
+    "top_themes": ["theme1", "theme2", "theme3"],
+    "critical_items": [{"preview": "<text>", "severity": "P0"|"P1", "action": "<action>"}],
+    "tpm_next_steps": ["step1", "step2", "step3"]
+  }
+}
+
+Severity guide: P0 = billing errors, data loss, can't complete a core action, security.
+P1 = major feature broken, multiple users affected. P2 = degraded experience, workaround exists.
+P3 = minor cosmetic, low-impact. Calibrate carefully — "hard to find button" is P3, not P0."""
+
+
+def analyze_feedback(feedback_text: str, api_key: str) -> dict:
+    """Send feedback to Claude and return structured analysis."""
+    import anthropic
+    client = anthropic.Anthropic(api_key=api_key)
+    response = client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=2048,
+        system=_FEEDBACK_SYSTEM,
+        messages=[{"role": "user", "content": f"Customer feedback items:\n\n{feedback_text.strip()}"}]
+    )
+    raw = response.content[0].text.strip()
+    if raw.startswith("```"):
+        raw = re.sub(r"^```[a-z]*\n?", "", raw)
+        raw = re.sub(r"\n?```$", "", raw)
+    return json.loads(raw)
+
+
+if not ANTHROPIC_API_KEY:
+    st.warning("Add your Anthropic API key in the sidebar to use the Feedback Agent.")
+else:
+    feedback_input = st.text_area(
+        "Customer Feedback",
+        height=220,
+        placeholder=(
+            "The checkout page keeps crashing on mobile. I've tried three times and lost my cart.\n\n"
+            "Love the new dashboard design! Much easier to find what I need.\n\n"
+            "My account was charged twice for the same order. This is unacceptable.\n\n"
+            "The search results are a bit slow but it eventually loads."
+        )
+    )
+
+    if st.button("Analyze Feedback", type="primary", disabled=not feedback_input.strip()):
+        items_raw = [i.strip() for i in re.split(r"\n\s*\n", feedback_input.replace("\r\n", "\n")) if i.strip()]
+        if not items_raw:
+            st.error("No feedback items found. Separate each item with a blank line.")
+        else:
+            with st.spinner(f"Claude is analyzing {len(items_raw)} feedback item(s)..."):
+                try:
+                    result = analyze_feedback(feedback_input, ANTHROPIC_API_KEY)
+                    st.session_state["feedback_analysis"] = result
+                except Exception as e:
+                    st.error(f"Analysis failed: {e}")
+
+    analysis = st.session_state.get("feedback_analysis")
+    if analysis:
+        summary = analysis.get("summary", {})
+        items = analysis.get("items", [])
+
+        # ── Aggregate metrics ────────────────────────────────────────────────
+        st.subheader("Aggregate Summary")
+        sc = summary.get("sentiment_counts", {})
+        cols = st.columns(5)
+        cols[0].metric("Total Items", summary.get("total", len(items)))
+        cols[1].metric("Negative", sc.get("Negative", 0))
+        cols[2].metric("Positive", sc.get("Positive", 0))
+        cols[3].metric("Neutral", sc.get("Neutral", 0))
+        cols[4].metric("Mixed", sc.get("Mixed", 0))
+
+        top_themes = summary.get("top_themes", [])
+        if top_themes:
+            st.markdown("**Top Themes:** " + " · ".join(f"`{t}`" for t in top_themes))
+
+        critical = summary.get("critical_items", [])
+        if critical:
+            st.markdown("**Critical Items (P0/P1):**")
+            for c in critical:
+                sev_color = "🔴" if c.get("severity") == "P0" else "🟠"
+                st.markdown(f"{sev_color} **[{c.get('severity')}]** {c.get('preview', '')} → _{c.get('action', '')}_")
+
+        next_steps = summary.get("tpm_next_steps", [])
+        if next_steps:
+            st.markdown("**Recommended TPM Actions:**")
+            for i, step in enumerate(next_steps, 1):
+                st.markdown(f"{i}. {step}")
+
+        # ── Per-item breakdown ───────────────────────────────────────────────
+        st.subheader(f"Per-Item Breakdown ({len(items)} items)")
+        sentiment_icon = {"Positive": "✅", "Negative": "❌", "Neutral": "➖", "Mixed": "🔀"}
+        severity_icon = {"P0": "🔴", "P1": "🟠", "P2": "🟡", "P3": "🟢"}
+        for i, item in enumerate(items, 1):
+            sev = item.get("severity", "P3")
+            sent = item.get("sentiment", "Neutral")
+            label = f"[{i}] {severity_icon.get(sev, '')} {sev} · {sentiment_icon.get(sent, '')} {sent} · {item.get('text_preview', '')[:60]}"
+            with st.expander(label, expanded=(sev in {"P0", "P1"} and i <= 3)):
+                th = item.get("themes", [])
+                st.markdown(f"**Themes:** {', '.join(th) if th else '—'}")
+                st.markdown(f"**Severity:** {sev}  |  **Sentiment:** {sent}")
+                st.markdown(f"**TPM Action:** {item.get('action', '—')}")

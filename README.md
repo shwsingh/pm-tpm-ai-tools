@@ -7,7 +7,7 @@ A 14-day advanced vibe coding challenge to build an AI-powered TPM/Product Manag
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Streamlit](https://img.shields.io/badge/Built%20with-Streamlit-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
-[![Progress](https://img.shields.io/badge/Progress-8%2F14-brightgreen)](#progress)
+[![Progress](https://img.shields.io/badge/Progress-9%2F14-brightgreen)](#progress)
 [![Blog](https://img.shields.io/badge/Blog-shwsingh.github.io%2Fpm--tpm--ai--tools-1e3a8a)](https://shwsingh.github.io/pm-tpm-ai-tools/)
 
 📝 **Weekly blog:** [shwsingh.github.io/pm-tpm-ai-tools](https://shwsingh.github.io/pm-tpm-ai-tools/)
@@ -72,7 +72,7 @@ streamlit run projects/tpm_pm_toolkit/app.py
 | Day 6  | Agent Workflow          | ✅ Complete |
 | Day 7  | Status Report Skill     | ✅ Complete |
 | Day 8  | Knowledge Base / RAG    | ✅ Complete |
-| Day 9  | Feedback Agent          | ☐ Planned  |
+| Day 9  | Feedback Agent          | ✅ Complete |
 | Day 10 | Dependency Agent        | ☐ Planned  |
 | Day 11 | Evaluation Framework    | ☐ Planned  |
 | Day 12 | Multi-Agent System      | ☐ Planned  |
@@ -93,9 +93,10 @@ timeline
     Day 6  : Agent Workflow - 3-stage pipeline (Ingest → Triage → Escalation)
     Day 7  : Status Report Skill - exec report generator with 5-dimension quality eval
     Day 8  : Knowledge Base - upload and keyword search over txt, md, docx, csv
+    Day 9  : Feedback Agent + Claude-powered bug triage (first LLM calls)
 ```
 
-### Current architecture (Day 8)
+### Current architecture (Day 9)
 
 ```mermaid
 flowchart LR
@@ -105,14 +106,17 @@ flowchart LR
     WF["Agent Workflow<br/>Day 6"]:::ui
     SR["Status Report<br/>Day 7"]:::ui
     KB["Knowledge Base<br/>Day 8"]:::ui
+    FA["Feedback Agent<br/>Day 9"]:::ui
 
     PIPE["3-Stage Pipeline<br/>Ingest -- Triage -- Escalation"]:::agent
     BTA["Bug Triage Agent"]:::agent
+    CLAUDE[("Claude API<br/>claude-sonnet-4-6")]:::llm
 
     S_LR[/"skill: launch_risk_analysis"/]:::skill
     S_BUG[/"skill: bug_triage"/]:::skill
     S_SR[/"skill: status_report"/]:::skill
     S_KB[/"skill: knowledge_base"/]:::skill
+    S_FA[/"skill: feedback_agent"/]:::skill
 
     SS[("Session State")]:::store
     CHUNKS[("Doc Chunks<br/>txt / md / docx / csv")]:::store
@@ -121,25 +125,30 @@ flowchart LR
     User --> WF
     User --> SR
     User --> KB
+    User --> FA
 
     LRA --> S_LR
     WF --> PIPE
     PIPE --> BTA
     BTA --> S_BUG
+    BTA --> CLAUDE
     PIPE --> SS
     SS --> SR
     SR --> S_SR
     KB --> CHUNKS
     KB --> S_KB
+    FA --> S_FA
+    FA --> CLAUDE
 
     classDef user fill:#1e293b,stroke:#60a5fa,color:#f8fafc,font-weight:bold
     classDef ui fill:#a16207,stroke:#fde68a,color:#fffbeb,font-weight:bold
     classDef agent fill:#166534,stroke:#86efac,color:#f0fdf4,font-weight:bold
     classDef skill fill:#1e40af,stroke:#93c5fd,color:#eff6ff
     classDef store fill:#6d28d9,stroke:#c4b5fd,color:#f5f3ff
+    classDef llm fill:#7c3aed,stroke:#c4b5fd,color:#f5f3ff,font-weight:bold
 ```
 
-**Legend** — yellow = UI, green = agent, blue = skill spec, purple = data/session, navy = user.
+**Legend** — yellow = UI, green = agent, blue = skill spec, purple = data/LLM, navy = user.
 
 Full per-day delta diagrams, planned-future layer, mindmap, and Gantt → [`challenge/project_evolution.md`](challenge/project_evolution.md).
 
@@ -156,7 +165,8 @@ pm-tpm-ai-tools/
 │   ├── prd_builder.md                    # Day 4
 │   ├── bug_triage.md                     # Day 5
 │   ├── status_report.md                  # Day 7
-│   └── knowledge_base.md                 # Day 8
+│   ├── knowledge_base.md                 # Day 8
+│   └── feedback_agent.md                 # Day 9
 │
 ├── agents/                               # Agent contracts
 │   ├── bug_triage_agent.md               # Day 5
@@ -213,6 +223,7 @@ Location: [`projects/tpm_pm_toolkit/app.py`](projects/tpm_pm_toolkit/app.py)
 | Day 6 | Agent Workflow | 3-stage pipeline: Ingest → Triage → Escalation Handler with draft artifacts |
 | Day 7 | Status Report | Auto-populates from pipeline, 5-dimension quality eval, human confirm flow |
 | Day 8 | Knowledge Base | Upload `.txt`, `.md`, `.docx`, `.csv` and search by keyword |
+| Day 9 | Feedback Agent | Claude analyzes customer feedback: sentiment, themes, severity, TPM actions |
 
 ## Tech Stack
 
@@ -225,7 +236,7 @@ Location: [`projects/tpm_pm_toolkit/app.py`](projects/tpm_pm_toolkit/app.py)
 | Skills & agents | Markdown specs (prompt-style contracts) |
 | Blog | GitHub Pages (Minimal Mistakes theme) |
 | Version control | Git + GitHub |
-| AI (Day 9+) | Claude API (Anthropic) |
+| AI | Claude API (Anthropic) — `claude-sonnet-4-6` |
 | MCP (Day 13) | Model Context Protocol |
 
 ## Planned Advanced Capabilities
