@@ -869,31 +869,59 @@ SUMMARY
 {sep}"""
 
 
+def _plain_risk_reason(r):
+    """Translate internal needs_lead_reason into exec-readable language."""
+    reason = r.get("needs_lead_reason", "").lower()
+    component = r.get("component", "Unknown")
+    severity = r.get("severity", "Unknown")
+
+    if "no severity signal" in reason or severity == "Unknown":
+        return (f"{component}: bug reported with unclear impact — "
+                "under lead review to determine priority and owner")
+    if "single keyword" in reason or "thin" in reason:
+        return (f"{component}: {severity} bug flagged — "
+                "evidence is limited, lead review needed before escalating")
+    if "conflicting signal" in reason:
+        return (f"{component}: bug has mixed severity signals — "
+                "lead review needed to confirm priority")
+    if "unknown component" in reason or "could not identify" in reason:
+        return (f"Unrouted bug: affected area unclear — "
+                "lead review needed to assign owner and priority")
+    if "ambiguous" in reason:
+        return (f"{component}: bug description is ambiguous — "
+                "lead review needed to confirm impact before acting")
+    # fallback: plain rewrite of whatever the reason is
+    return f"{component}: under lead review — {r.get('needs_lead_reason', 'details unclear')}"
+
+
 def auto_populate_from_pipeline(pipeline):
-    """Derive blockers, risks, and asks from last pipeline run."""
+    """Derive blockers, risks, and asks from last pipeline run in exec-ready language."""
     escalation = pipeline["escalation"]
     triage_results = pipeline["triage_results"]
 
     blockers_lines = []
     for r in escalation["incidents"]:
-        blockers_lines.append(f"{r['severity']} incident — {r['component']}: {r['escalate_reason']}")
+        action = r["next_action"].rstrip(".")
+        blockers_lines.append(
+            f"{r['component']} {r['severity']} incident — on-call paged, {action.lower()}"
+        )
     auto_blockers = "\n".join(blockers_lines) if blockers_lines else "None"
 
     risks_lines = []
     for r in escalation["leads"]:
-        risks_lines.append(f"{r['severity']} bug needs lead review — {r['component']}: {r['needs_lead_reason']}")
+        risks_lines.append(_plain_risk_reason(r))
     auto_risks = "\n".join(risks_lines) if risks_lines else "None"
 
     asks_lines = []
     for r in escalation["incidents"]:
         asks_lines.append(
-            f"Confirm on-call response for {r['severity']} {r['component']} incident "
-            f"and approve next action — {r['next_action']}"
+            f"Confirm incident response plan for {r['component']} {r['severity']} outage "
+            f"and approve resolution timeline"
         )
     if escalation["leads"]:
         asks_lines.append(
-            f"Review {len(escalation['leads'])} bug(s) flagged as Needs Lead "
-            "and confirm triage decision before acting"
+            f"Review {len(escalation['leads'])} bug(s) with unclear priority "
+            "and confirm owner and next action before end of week"
         )
     auto_asks = "\n".join(asks_lines) if asks_lines else "None"
 
