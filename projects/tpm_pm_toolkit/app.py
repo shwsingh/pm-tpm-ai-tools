@@ -753,6 +753,12 @@ if st.button("Run Agent Workflow"):
                 if not escalation["incidents"] and not escalation["leads"]:
                     st.success("✅ All bugs triaged to routine queues — no escalation needed.")
 
+            # Save pipeline output for Day 7 auto-population
+            st.session_state["last_pipeline"] = {
+                "triage_results": triage_results,
+                "escalation": escalation,
+            }
+
 st.divider()
 
 # ── Day 7: Status Report Skill ───────────────────────────────────────────────
@@ -760,67 +766,54 @@ st.divider()
 st.markdown('<div class="section-title">📋 Day 7: Status Report Skill</div>', unsafe_allow_html=True)
 
 st.write(
-    "Fill in your weekly updates below. The skill generates a structured, exec-ready "
-    "status report and scores it across five quality dimensions."
+    "Blockers, risks, and asks are **auto-populated from the last pipeline run** (Day 6). "
+    "Review and edit every field, then score the report before confirming."
 )
 
 BLOCKER_RED_KEYWORDS = ["blocked", "blocker", "on hold", "security hold", "privacy hold",
-                         "p0", "p1", "missed milestone", "overdue", "escalation needed"]
+                        "p0", "p1", "missed milestone", "overdue", "escalation needed"]
 RISK_YELLOW_KEYWORDS = ["at risk", "risk", "delay", "delayed", "pending", "dependency",
-                         "waiting", "review needed", "may slip", "concern"]
+                        "waiting", "review needed", "may slip", "concern"]
 VAGUE_ASK_WORDS = ["help", "look at", "should review", "need support", "need input",
-                    "leadership attention", "someone should"]
+                   "leadership attention", "someone should"]
 WEAK_NEXT_WEEK_WORDS = ["continue", "work on", "progress", "keep working", "ongoing",
-                         "follow up", "look into"]
+                        "follow up", "look into"]
+
 
 def score_report(team, shipped, blockers, risks, asks, next_week):
-    """Score a status report across the 5 eval dimensions. Returns scores dict + status color."""
     scores = {}
     notes = {}
 
-    # 1. Completeness
     fields = {"Team/Launch": team, "Shipped": shipped, "Next Week": next_week}
     empty = [k for k, v in fields.items() if not v.strip()]
     scores["Completeness"] = len(empty) == 0
     notes["Completeness"] = f"Missing: {', '.join(empty)}" if empty else "All required fields filled"
 
-    # 2. Ask Specificity
     if not asks.strip() or asks.strip().lower() in ("none", "n/a", "no asks"):
         scores["Ask Specificity"] = True
         notes["Ask Specificity"] = "No asks this week"
     else:
         vague = [w for w in VAGUE_ASK_WORDS if w in asks.lower()]
         scores["Ask Specificity"] = len(vague) == 0
-        notes["Ask Specificity"] = f"Vague language detected: {', '.join(vague)}" if vague else "Asks appear specific"
+        notes["Ask Specificity"] = f"Vague language: {', '.join(vague)}" if vague else "Asks appear specific"
 
-    # 3. Status Accuracy (evaluated after color is determined below)
     blocker_lower = blockers.lower()
     risk_lower = risks.lower()
-    has_blocker = any(k in blocker_lower for k in BLOCKER_RED_KEYWORDS) and blockers.strip().lower() not in ("none", "n/a", "no blockers")
-    has_risk = any(k in risk_lower for k in RISK_YELLOW_KEYWORDS) and risks.strip().lower() not in ("none", "n/a", "no risks")
-
-    if has_blocker:
-        status = "Red"
-    elif has_risk:
-        status = "Yellow"
-    else:
-        status = "Green"
-
-    scores["Status Accuracy"] = True  # always accurate since we derive it from content
+    has_blocker = any(k in blocker_lower for k in BLOCKER_RED_KEYWORDS) and blocker_lower not in ("none", "n/a", "no blockers")
+    has_risk = any(k in risk_lower for k in RISK_YELLOW_KEYWORDS) and risk_lower not in ("none", "n/a", "no risks")
+    status = "Red" if has_blocker else "Yellow" if has_risk else "Green"
+    scores["Status Accuracy"] = True
     notes["Status Accuracy"] = f"Status derived from content — {status} is consistent"
 
-    # 4. Clarity — flag unexplained all-caps acronyms (3+ chars)
-    import re as _re
     all_text = " ".join([shipped, blockers, risks, asks, next_week])
-    acronyms = _re.findall(r'\b[A-Z]{3,}\b', all_text)
+    acronyms = re.findall(r'\b[A-Z]{3,}\b', all_text)
     known = {"TPM", "PM", "PRD", "API", "SDK", "MCP", "RAG", "NLP", "ETL", "SLA",
              "PII", "P0", "P1", "P2", "P3", "UI", "UX", "QA", "MVP", "OKR", "KPI",
-             "ETA", "EOD", "EOW", "LGTM", "WIP", "TBD", "TBD", "VP", "IC", "iOS"}
+             "ETA", "EOD", "EOW", "LGTM", "WIP", "TBD", "VP", "IC", "iOS"}
     unexplained = list(set(a for a in acronyms if a not in known))
     scores["Clarity"] = len(unexplained) == 0
-    notes["Clarity"] = f"Unexplained acronyms: {', '.join(unexplained)}" if unexplained else "No unexplained acronyms detected"
+    notes["Clarity"] = f"Unexplained acronyms: {', '.join(unexplained)}" if unexplained else "No unexplained acronyms"
 
-    # 5. Next Week Concreteness
     weak = [w for w in WEAK_NEXT_WEEK_WORDS if w in next_week.lower()]
     scores["Next Week Concreteness"] = len(weak) == 0
     notes["Next Week Concreteness"] = f"Weak language: {', '.join(weak)}" if weak else "Next week items appear concrete"
@@ -829,7 +822,6 @@ def score_report(team, shipped, blockers, risks, asks, next_week):
 
 
 def build_report(team, shipped, blockers, risks, asks, next_week, status, week_of):
-    """Assemble the formatted exec report string."""
     sep = "━" * 42
 
     def bullets(text):
@@ -839,7 +831,6 @@ def build_report(team, shipped, blockers, risks, asks, next_week, status, week_o
         return "\n".join(f"• {l}" for l in lines)
 
     icon = {"Red": "🔴", "Yellow": "🟡", "Green": "🟢"}[status]
-
     summary_map = {
         "Red": f"{team} is currently blocked and needs leadership action to stay on track.",
         "Yellow": f"{team} is progressing with risks that should be monitored this week.",
@@ -873,50 +864,114 @@ SUMMARY
 {sep}"""
 
 
-with st.form("status_report_form"):
+def auto_populate_from_pipeline(pipeline):
+    """Derive blockers, risks, and asks from last pipeline run."""
+    escalation = pipeline["escalation"]
+    triage_results = pipeline["triage_results"]
+
+    blockers_lines = []
+    for r in escalation["incidents"]:
+        blockers_lines.append(f"{r['severity']} incident — {r['component']}: {r['escalate_reason']}")
+    auto_blockers = "\n".join(blockers_lines) if blockers_lines else "None"
+
+    risks_lines = []
+    for r in escalation["leads"]:
+        risks_lines.append(f"{r['severity']} bug needs lead review — {r['component']}: {r['needs_lead_reason']}")
+    auto_risks = "\n".join(risks_lines) if risks_lines else "None"
+
+    asks_lines = []
+    for r in escalation["incidents"]:
+        asks_lines.append(
+            f"Confirm on-call response for {r['severity']} {r['component']} incident "
+            f"and approve next action — {r['next_action']}"
+        )
+    if escalation["leads"]:
+        asks_lines.append(
+            f"Review {len(escalation['leads'])} bug(s) flagged as Needs Lead "
+            "and confirm triage decision before acting"
+        )
+    auto_asks = "\n".join(asks_lines) if asks_lines else "None"
+
+    sev_summary = ", ".join(
+        f"{r['severity']} ({r['component']})" for r in triage_results
+        if not r["needs_lead"] and not r["escalate"]
+    )
+    auto_shipped = (
+        f"Triaged {len(triage_results)} bug(s) through the agent workflow\n"
+        f"Routine bugs: {sev_summary if sev_summary else 'none'}"
+    )
+
+    return auto_blockers, auto_risks, auto_asks, auto_shipped
+
+
+# ── Auto-populate defaults from last pipeline run ────────────────────────────
+pipeline = st.session_state.get("last_pipeline")
+
+if pipeline:
+    st.info("✨ Blockers, risks, and asks auto-populated from the last pipeline run. Review and edit before scoring.")
+    default_blockers, default_risks, default_asks, default_shipped = auto_populate_from_pipeline(pipeline)
+else:
+    st.warning("No pipeline run found — run the Day 6 Agent Workflow above first to auto-populate fields.")
+    default_blockers = default_risks = default_asks = default_shipped = ""
+
+# ── Step 1: Review & Edit ─────────────────────────────────────────────────────
+st.subheader("Step 1 — Review & Edit")
+
+with st.form("sr_review_form"):
     sr_team = st.text_input("Team / Launch Name", placeholder="e.g. Checkout v2 Launch")
-    sr_week = st.text_input("Week of", placeholder="e.g. June 9–13, 2026")
-    sr_shipped = st.text_area("What shipped this week", height=100,
-        placeholder="e.g. Completed auth integration\nFixed P1 checkout bug on iOS")
-    sr_blockers = st.text_area("Blockers", height=80,
-        placeholder="e.g. Security review on hold — waiting for approval from InfoSec team\nOr: None")
-    sr_risks = st.text_area("Risks", height=80,
-        placeholder="e.g. Third-party API dependency may delay launch by 1 week\nOr: None")
-    sr_asks = st.text_area("Asks from leadership", height=80,
-        placeholder="e.g. Approve launch exception for known P2 bug by June 13\nOr: None")
+    sr_week = st.text_input("Week of", value="June 9–13, 2026")
+    sr_shipped = st.text_area("What shipped this week", value=default_shipped, height=100)
+    sr_blockers = st.text_area("Blockers", value=default_blockers, height=100)
+    sr_risks = st.text_area("Risks", value=default_risks, height=100)
+    sr_asks = st.text_area("Asks from leadership", value=default_asks, height=100)
     sr_next = st.text_area("Next week plan", height=100,
         placeholder="e.g. Ship staging build to QA by Wednesday\nComplete load testing and sign off by Friday")
-    submitted = st.form_submit_button("Generate Status Report")
+    preview_clicked = st.form_submit_button("Score & Preview Report")
 
-if submitted:
+# ── Step 2: Eval + Confirm ────────────────────────────────────────────────────
+if preview_clicked:
     if not sr_team.strip() or not sr_shipped.strip() or not sr_next.strip():
         st.warning("Team name, shipped work, and next week plan are required.")
     else:
-        scores, notes, status = score_report(sr_team, sr_shipped, sr_blockers, sr_risks, sr_asks, sr_next)
+        st.subheader("Step 2 — Eval Scores")
+
+        scores, notes, status = score_report(
+            sr_team, sr_shipped, sr_blockers, sr_risks, sr_asks, sr_next
+        )
         week_label = sr_week.strip() if sr_week.strip() else "Week not specified"
-        report = build_report(sr_team, sr_shipped, sr_blockers, sr_risks, sr_asks, sr_next, status, week_label)
 
-        # Status banner
         if status == "Red":
-            st.error("🔴 Red — Active blockers detected. Leadership action needed.")
+            st.error("🔴 Red — Active blockers detected.")
         elif status == "Yellow":
-            st.warning("🟡 Yellow — Risks present. Monitor closely.")
+            st.warning("🟡 Yellow — Risks present.")
         else:
-            st.success("🟢 Green — On track. No blockers or risks.")
+            st.success("🟢 Green — On track.")
 
-        # Eval scores
-        st.subheader("Quality Eval")
-        all_pass = all(scores.values())
         ec1, ec2, ec3, ec4, ec5 = st.columns(5)
         for col, (dim, passed) in zip([ec1, ec2, ec3, ec4, ec5], scores.items()):
             col.metric(dim, "✅ Pass" if passed else "❌ Fail")
 
+        all_pass = all(scores.values())
         if all_pass:
             st.success("✅ Exec-Ready — all five quality dimensions pass.")
         else:
-            failed = [f"**{d}**: {notes[d]}" for d, p in scores.items() if not p]
-            st.warning("⚠️ Not Exec-Ready — fix before sending:\n\n" + "\n\n".join(failed))
+            failed_items = [f"- **{d}**: {notes[d]}" for d, p in scores.items() if not p]
+            st.warning(
+                "⚠️ Not Exec-Ready — fix these before sending (or confirm anyway):\n\n"
+                + "\n".join(failed_items)
+            )
 
-        # Report
-        st.subheader("Generated Report")
+        report = build_report(
+            sr_team, sr_shipped, sr_blockers, sr_risks, sr_asks, sr_next, status, week_label
+        )
+
+        st.subheader("Step 3 — Confirm & Finalize")
+        st.caption("Review the report below. Click Confirm to finalize.")
         st.code(report, language=None)
+
+        if st.button("✅ Confirm & Finalize Report", type="primary"):
+            st.session_state["finalized_report"] = report
+            st.success("Report finalized. Copy it above and send to leadership.")
+
+        if st.session_state.get("finalized_report") == report:
+            st.balloons()
