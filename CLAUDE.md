@@ -29,13 +29,17 @@ The Day 2 Launch Risk Analyzer uses **keyword matching against hardcoded lists**
 ### Skills are markdown specs, not code
 Files in `skills/` (e.g. `launch_risk_analysis.md`) are **prompt-style behavior specifications** — input/output contracts, evaluation rules, expected output formats. They are not imported or executed by `app.py`. They're designed to be consumed by future agents (Day 5+). When adding a skill, follow the structure of `skills/launch_risk_analysis.md`: Purpose → Input → Output sections → Evaluation Rules → Expected Output Format.
 
-### Progress is tracked in three places (keep in sync)
-When completing a day, update all of:
-1. The Progress table in [`README.md`](README.md)
-2. The status column in [`challenge/14_day_plan.md`](challenge/14_day_plan.md)
-3. A new section in [`challenge/progress_tracker.md`](challenge/progress_tracker.md)
+### Day wrap — update these 5 things before every "Day N" commit
 
-The README also has a `Progress-3%2F14` shields.io badge — bump the numerator when a day completes.
+**This is a hard rule. Do not commit a `Day N - ...` message without completing all 5.**
+
+1. `challenge/progress_tracker.md` — new Day N section: Status, Built (bullet list), Key design decisions (numbered), Lessons
+2. `challenge/14_day_plan.md` — mark Day N ✅ Done
+3. `README.md` — bump the shields.io badge numerator, add row to Current Application table, add line to build timeline, update architecture diagram
+4. `lessons_learned/common_errors.md` — add any new anti-patterns discovered during the day
+5. `design_decisions/dayN_*.md` — new file with design decisions, alternatives considered, and rationale
+
+A git hook at `.git/hooks/post-commit` (installed via `bash scripts/install-hooks.sh`) will warn after any `Day N` commit if files 1–3 or 5 are missing. If you see that warning, run `git add <files> && git commit --amend --no-edit`.
 
 ### Lessons learned convention
 After finishing a day, capture non-obvious learnings in `lessons_learned/` (see `day1_day2_lessons.md` for tone — short, first-person, what surprised the user). Errors and their fixes go in `lessons_learned/common_errors.md`.
