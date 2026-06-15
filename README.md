@@ -95,9 +95,11 @@ timeline
     Day 8  : Knowledge Base - upload and keyword search over txt, md, docx, csv
     Day 9  : Feedback Agent + Claude-powered bug triage (first LLM calls)
     Day 10 : Dependency Agent - critical path + cascading risk reasoning
+    Day 11 : Agent Harness (all Claude calls unified) + Evaluation Framework (Claude-as-judge)
+    Day 12 : Multi-Agent System - orchestrator loop with 4 tools + exec synthesis
 ```
 
-### Current architecture (Day 10)
+### Current architecture (Day 12)
 
 ```mermaid
 flowchart LR
@@ -110,9 +112,13 @@ flowchart LR
     KB["Knowledge Base<br/>Day 8"]:::ui
     FA["Feedback Agent<br/>Day 9"]:::ui
     DA["Dependency Agent<br/>Day 10"]:::ui
+    EV["Eval Framework<br/>Day 11"]:::ui
+    ORC["Orchestrator<br/>Day 12"]:::ui
 
+    HARNESS["AgentHarness<br/>retry · tokens · logging"]:::agent
     PIPE["3-Stage Pipeline<br/>Ingest -- Triage -- Escalation"]:::agent
-    BTA["triage_with_claude()"]:::agent
+    LOOP["Agent Loop<br/>tool_use → execute → loop"]:::agent
+
     CLAUDE[("Claude API<br/>claude-sonnet-4-6")]:::llm
 
     S_LR[/"skill: launch_risk_analysis"/]:::skill
@@ -123,8 +129,9 @@ flowchart LR
     S_DA[/"skill: dependency_agent"/]:::skill
 
     SS[("Session State")]:::store
-    CHUNKS[("Doc Chunks<br/>txt / md / docx / csv")]:::store
+    CHUNKS[("Doc Chunks")]:::store
     DEPS[("Dependency Graph")]:::store
+    TOKLOG[("Token Log")]:::store
 
     User --> LRA
     User --> D5
@@ -133,23 +140,29 @@ flowchart LR
     User --> KB
     User --> FA
     User --> DA
+    User --> EV
+    User --> ORC
 
     LRA --> S_LR
-    D5 --> BTA
+    D5 --> HARNESS
     D5 --> S_BUG
     WF --> PIPE
-    PIPE --> BTA
-    BTA --> CLAUDE
+    PIPE --> HARNESS
+    FA --> HARNESS
+    FA --> S_FA
+    DA --> HARNESS
+    DA --> S_DA
+    DA --> DEPS
+    EV --> HARNESS
+    ORC --> LOOP
+    LOOP --> HARNESS
+    HARNESS --> CLAUDE
+    HARNESS --> TOKLOG
     PIPE --> SS
     SS --> SR
     SR --> S_SR
     KB --> CHUNKS
     KB --> S_KB
-    FA --> S_FA
-    FA --> CLAUDE
-    DA --> DEPS
-    DA --> S_DA
-    DA --> CLAUDE
 
     classDef user fill:#1e293b,stroke:#60a5fa,color:#f8fafc,font-weight:bold
     classDef ui fill:#a16207,stroke:#fde68a,color:#fffbeb,font-weight:bold
@@ -159,7 +172,8 @@ flowchart LR
     classDef llm fill:#7c3aed,stroke:#c4b5fd,color:#f5f3ff,font-weight:bold
 ```
 
-**Legend** — yellow = UI, green = agent, blue = skill spec, purple = data/LLM, navy = user.
+**Legend** — yellow = UI, green = agent/infrastructure, blue = skill spec, purple = data/LLM, navy = user.
+All Claude calls route through `AgentHarness` → `Claude API`. The Day 12 orchestrator adds an `Agent Loop` layer on top.
 
 Full per-day delta diagrams, planned-future layer, mindmap, and Gantt → [`challenge/project_evolution.md`](challenge/project_evolution.md).
 
@@ -237,6 +251,8 @@ Location: [`projects/tpm_pm_toolkit/app.py`](projects/tpm_pm_toolkit/app.py)
 | Day 8 | Knowledge Base | Upload `.txt`, `.md`, `.docx`, `.csv` and search by keyword |
 | Day 9 | Feedback Agent | Claude analyzes customer feedback: sentiment, themes, severity, TPM actions |
 | Day 10 | Dependency Agent | Add cross-team deps, Claude reasons critical path, cascades, and TPM actions |
+| Day 11 | Evaluation Framework | AgentHarness unifies all Claude calls; Claude-as-judge scores outputs per skill spec rules |
+| Day 12 | Multi-Agent Orchestrator | Free-text TPM request → agent loop → tool calls → exec briefing synthesis |
 
 ## Tech Stack
 

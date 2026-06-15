@@ -262,3 +262,64 @@ Lessons:
 - Cascading risk detection requires seeing the full graph — this is the key reason to batch all deps into one Claude call, not N separate calls
 - Structured form input + JSON prompt = more reliable output than asking Claude to parse free-text dependency descriptions
 - The dependency graph naturally feeds the status report — Day 12 multi-agent will wire these together without changing either agent's contract
+
+---
+
+## Day 11
+
+Status: COMPLETE
+
+Goal:
+Formalize all Claude calls into a reusable AgentHarness and build an evaluation framework that scores agent outputs against skill spec rules using Claude as judge.
+
+Built:
+- AgentHarness class — single wrapper for all Claude calls: retry on JSON parse failure (up to 2 retries), token logging (input/output/total/latency), model constant (MODEL = "claude-sonnet-4-6")
+- Refactored all 3 Claude functions through AgentHarness: triage_with_claude, analyze_feedback, analyze_dependencies — same output contracts, callers unchanged
+- _show_token_usage() helper — compact per-call token display shown after each result
+- Day 11 Evaluation Framework section — Claude-as-judge scores any agent output per skill spec eval rules; per-criterion pass/fail, A-F grade, improvement suggestions
+- Session Token Dashboard — cumulative in/out/total tokens + per-call log for the full session
+- Model upgraded from claude-sonnet-4-6 to claude-opus-4-7 in AgentHarness (then switched back to sonnet for Day 12)
+
+Key design decisions:
+1. AgentHarness returns {"output": dict, "meta": {...}} — callers extract output; meta stored in session state for display without changing any call sites
+2. Retry on JSON parse failure (not on API failure) — handles the occasional ```json wrapper Claude adds; API errors surface immediately
+3. Claude-as-judge uses the skill spec eval rules verbatim — no separate golden set needed; rules are already in the skill specs
+4. Two-call eval pattern: call 1 = agent run, call 2 = evaluator — keeps concerns separate and makes each call independently auditable
+5. Token dashboard at page bottom — accumulates across all calls in the session, not just the last call
+
+Lessons:
+- The stable output contracts from Days 5-10 meant the harness refactor was purely internal — zero changes to callers or UI
+- Retry on JSON parse failure catches ~100% of formatting issues without masking real API errors
+- Claude-as-judge is more flexible than DeepEval for custom skill specs — no schema registration, just natural language rules
+- Showing tokens after every call makes cost visible immediately; users calibrate prompt length naturally
+
+---
+
+## Day 12
+
+Status: COMPLETE
+
+Goal:
+Build a multi-agent orchestrator with a true agent loop: Claude calls specialized tools (bug triage, feedback analysis, dependency analysis, knowledge base search), reasons on results, and loops to a final exec synthesis.
+
+Built:
+- ORCHESTRATOR_TOOLS — 4 tool schemas: triage_bug, analyze_customer_feedback, analyze_dependency_graph, search_knowledge_base
+- execute_tool() — dispatcher routing Claude tool calls to existing harness-backed agent functions
+- run_agent_loop() — full agentic loop: send request + tools → Claude decides tool calls → execute → feed results back → loop until end_turn or max 5 iterations
+- Day 12 UI: free-text TPM request input, per-iteration expanders showing tool calls + inputs + result previews + tokens, exec briefing rendered from Claude's final answer
+- agents/orchestrator_agent.md — orchestrator contract with loop pattern diagram, tool table, system prompt, safety rules
+- MODEL switched from claude-opus-4-7 back to claude-sonnet-4-6 (user decision)
+- README badge 11/14 → 12/14; 14_day_plan Day 12 → Done
+
+Key design decisions:
+1. Tools call existing harness functions — no duplicate Claude logic; the loop adds orchestration on top of already-tested agents
+2. Max 5 iterations ceiling — prevents runaway loops on ambiguous requests; TPM tasks are bounded in scope
+3. Per-iteration trace in UI — each tool call visible with input, result preview, and tokens; loop is transparent, not a black box
+4. System prompt instructs call-per-bug (not batch bugs in one triage call) — each bug gets an independent triage; Claude naturally sequences them
+5. Tool errors are logged and loop continues — one bad tool call doesn't crash the orchestrator; error shown in trace
+
+Lessons:
+- The stable output contracts from Days 5-10 paid off again: wiring them as tools required only a JSON.dumps() wrapper
+- Claude follows "call triage_bug once per bug" instructions reliably when the system prompt is explicit — no need to enforce this in code
+- Showing the loop trace is the most valuable part of Day 12 for learning: it makes the agentic loop visible and debuggable
+- tool_use stop_reason requires keeping the full response.content in the messages list — extracting just text and discarding tool_use blocks breaks the loop
