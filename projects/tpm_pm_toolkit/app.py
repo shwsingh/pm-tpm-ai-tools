@@ -16,7 +16,7 @@ load_dotenv()
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 
 # ── Agent Harness (Day 11) ────────────────────────────────────────────────────
-MODEL = "claude-opus-4-7"
+MODEL = "claude-sonnet-4-6"
 
 
 class AgentHarness:
@@ -170,8 +170,8 @@ with st.sidebar:
     st.title("🏆 Challenge Progress")
     st.caption("TPM/PM AI Toolkit Build Journey")
 
-    st.progress(11 / 14)
-    st.metric("Overall Progress", "11 / 14 days", "+1 today")
+    st.progress(12 / 14)
+    st.metric("Overall Progress", "12 / 14 days", "+1 today")
 
     st.divider()
 
@@ -187,9 +187,10 @@ with st.sidebar:
     st.write("• Day 9 — Feedback Agent + Claude triage")
     st.write("• Day 10 — Dependency Agent")
     st.write("• Day 11 — Agent Harness + Evaluation Framework")
+    st.write("• Day 12 — Multi-Agent System + Agent Loops")
 
     st.subheader("🎯 Next Milestone")
-    st.info("Day 12 — Multi-Agent System + Agent Loops: Claude drives tool calls in a loop.")
+    st.info("Day 13 — MCP Integration: connect to GitHub, Jira, Slack via Model Context Protocol.")
 
 # Header
 st.markdown("""
@@ -1709,3 +1710,260 @@ if token_log:
                 f"#{i} `{entry['skill']}` — in {entry['input_tokens']} + out {entry['output_tokens']} "
                 f"= {entry['total_tokens']} tokens · {entry['latency_s']}s"
             )
+
+
+# ── Day 12: Multi-Agent System + Agent Loops ─────────────────────────────────
+
+st.markdown('<div class="section-title">🤖 Day 12: Multi-Agent System</div>', unsafe_allow_html=True)
+
+st.write(
+    "An orchestrator agent receives a free-text TPM request, decides which tools to call "
+    "(bug triage, feedback analysis, dependency analysis, knowledge base search), "
+    "reasons on each result, and loops until it can synthesize an exec-ready briefing. "
+    "This is the first true agent loop — Claude drives the execution, not the code."
+)
+
+_ORCHESTRATOR_SYSTEM = """You are an executive TPM Copilot with access to specialized analysis tools.
+
+When given a TPM request:
+1. Identify what types of data are present (bug reports / customer feedback / dependencies / questions)
+2. Call the appropriate tools to analyze each data type
+3. After gathering all results, synthesize an exec-ready briefing
+
+Rules:
+- Always call tools before giving your final answer — do not answer from memory alone
+- Call triage_bug once per bug report (not all bugs in one call)
+- Your final answer must follow this structure:
+  ## Status Summary
+  (1-2 sentences on overall health)
+
+  ## Key Findings
+  (bullet per data type analyzed)
+
+  ## Recommended TPM Actions
+  (numbered, specific, with team names and timeframes)"""
+
+ORCHESTRATOR_TOOLS = [
+    {
+        "name": "triage_bug",
+        "description": "Classify a single bug report: severity (P0-P3), component, owner, priority, and whether to escalate or route to lead.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "bug_text": {"type": "string", "description": "The bug report text to triage"}
+            },
+            "required": ["bug_text"]
+        }
+    },
+    {
+        "name": "analyze_customer_feedback",
+        "description": "Analyze customer feedback items for sentiment, recurring themes, severity signals, and recommended TPM actions. Separate multiple items with blank lines.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "feedback_text": {"type": "string", "description": "Customer feedback items separated by blank lines"}
+            },
+            "required": ["feedback_text"]
+        }
+    },
+    {
+        "name": "analyze_dependency_graph",
+        "description": "Analyze cross-team launch dependencies for critical path, cascading risks, and TPM actions. Input must be a JSON array of dependency objects.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "dependencies_json": {
+                    "type": "string",
+                    "description": 'JSON array: [{"id":1,"dependent_team":"X","provider_team":"Y","deliverable":"Z","due_date":"YYYY-MM-DD","status":"On Track|At Risk|Blocked"}]'
+                }
+            },
+            "required": ["dependencies_json"]
+        }
+    },
+    {
+        "name": "search_knowledge_base",
+        "description": "Search uploaded TPM documents for relevant information using keyword matching.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "query": {"type": "string", "description": "Search query or question"}
+            },
+            "required": ["query"]
+        }
+    },
+]
+
+
+def execute_tool(tool_name: str, tool_input: dict, api_key: str) -> str:
+    """Dispatch a tool call to the appropriate agent function. Returns JSON string."""
+    if tool_name == "triage_bug":
+        result = triage_with_claude(tool_input["bug_text"], api_key)
+        return json.dumps(result)
+    elif tool_name == "analyze_customer_feedback":
+        result = analyze_feedback(tool_input["feedback_text"], api_key)
+        return json.dumps(result)
+    elif tool_name == "analyze_dependency_graph":
+        deps = json.loads(tool_input["dependencies_json"])
+        result = analyze_dependencies(deps, api_key)
+        return json.dumps(result)
+    elif tool_name == "search_knowledge_base":
+        chunks = st.session_state.get("kb_chunks", [])
+        if not chunks:
+            return json.dumps({"results": [], "message": "No documents uploaded to knowledge base."})
+        results = keyword_search(chunks, tool_input["query"])
+        return json.dumps(results[:3])
+    else:
+        raise ValueError(f"Unknown tool: {tool_name}")
+
+
+def run_agent_loop(user_request: str, api_key: str, max_iterations: int = 5) -> dict:
+    """Run the orchestrator agent loop. Returns iterations trace + final answer."""
+    import anthropic
+    client = anthropic.Anthropic(api_key=api_key)
+
+    messages = [{"role": "user", "content": user_request}]
+    iterations = []
+    total_input = 0
+    total_output = 0
+
+    for i in range(max_iterations):
+        t0 = time.time()
+        response = client.messages.create(
+            model=MODEL,
+            max_tokens=4096,
+            system=_ORCHESTRATOR_SYSTEM,
+            tools=ORCHESTRATOR_TOOLS,
+            messages=messages,
+        )
+        latency = round(time.time() - t0, 2)
+        total_input += response.usage.input_tokens
+        total_output += response.usage.output_tokens
+
+        if response.stop_reason == "end_turn":
+            final_text = " ".join(
+                block.text for block in response.content if hasattr(block, "text")
+            )
+            iterations.append({
+                "type": "final",
+                "iteration": i + 1,
+                "text": final_text,
+                "input_tokens": response.usage.input_tokens,
+                "output_tokens": response.usage.output_tokens,
+                "latency_s": latency,
+            })
+            break
+
+        if response.stop_reason == "tool_use":
+            tool_use_blocks = [b for b in response.content if b.type == "tool_use"]
+            tool_results_content = []
+            calls_info = []
+
+            for block in tool_use_blocks:
+                try:
+                    result_str = execute_tool(block.name, block.input, api_key)
+                    tool_results_content.append({
+                        "type": "tool_result",
+                        "tool_use_id": block.id,
+                        "content": result_str,
+                    })
+                    calls_info.append({
+                        "tool": block.name,
+                        "input": block.input,
+                        "result_preview": result_str[:200],
+                        "success": True,
+                    })
+                except Exception as e:
+                    tool_results_content.append({
+                        "type": "tool_result",
+                        "tool_use_id": block.id,
+                        "content": f"Error: {e}",
+                        "is_error": True,
+                    })
+                    calls_info.append({"tool": block.name, "error": str(e), "success": False})
+
+            iterations.append({
+                "type": "tool_calls",
+                "iteration": i + 1,
+                "calls": calls_info,
+                "input_tokens": response.usage.input_tokens,
+                "output_tokens": response.usage.output_tokens,
+                "latency_s": latency,
+            })
+
+            messages.append({"role": "assistant", "content": response.content})
+            messages.append({"role": "user", "content": tool_results_content})
+
+    return {
+        "iterations": iterations,
+        "total_input_tokens": total_input,
+        "total_output_tokens": total_output,
+        "total_tokens": total_input + total_output,
+    }
+
+
+if not ANTHROPIC_API_KEY:
+    st.warning("Add your Anthropic API key in `.env` to use the Multi-Agent System.")
+else:
+    orchestrator_input = st.text_area(
+        "TPM Request",
+        height=220,
+        placeholder=(
+            "I need an exec briefing on our launch health. Here's what came in today:\n\n"
+            "Bugs:\n"
+            "- Checkout page throwing 500 errors for all EU users since last deploy. Revenue dropping.\n"
+            "- iOS app crashes during checkout on iOS 17.\n\n"
+            "Customer feedback:\n"
+            "- My payment was charged twice. No response from support.\n"
+            "- App keeps crashing when I try to buy something.\n"
+            "- Love the new search, much faster!\n\n"
+            "Please triage the bugs, analyze the feedback, and give me an exec summary."
+        ),
+    )
+
+    if st.button("Run Agent Loop", type="primary", disabled=not orchestrator_input.strip()):
+        with st.spinner("Agent loop running — Claude is calling tools and reasoning..."):
+            try:
+                loop_result = run_agent_loop(orchestrator_input, ANTHROPIC_API_KEY)
+                st.session_state["loop_result"] = loop_result
+            except Exception as e:
+                st.error(f"Agent loop failed: {e}")
+
+    loop = st.session_state.get("loop_result")
+    if loop:
+        iterations = loop["iterations"]
+        tool_iters = [it for it in iterations if it["type"] == "tool_calls"]
+        final_iter = next((it for it in iterations if it["type"] == "final"), None)
+
+        # ── Loop summary metrics ─────────────────────────────────────────────
+        lc1, lc2, lc3, lc4 = st.columns(4)
+        lc1.metric("Loop Iterations", len(iterations))
+        total_tool_calls = sum(len(it["calls"]) for it in tool_iters)
+        lc2.metric("Tool Calls Made", total_tool_calls)
+        lc3.metric("Total Tokens", loop["total_tokens"])
+        lc4.metric("Model", MODEL)
+
+        # ── Per-iteration trace ──────────────────────────────────────────────
+        st.subheader("Loop Trace")
+        for it in iterations:
+            if it["type"] == "tool_calls":
+                label = f"🔧 Iteration {it['iteration']} — {len(it['calls'])} tool call(s) · {it['total_tokens'] if 'total_tokens' in it else it['input_tokens'] + it['output_tokens']} tokens · {it['latency_s']}s"
+                with st.expander(label, expanded=True):
+                    for c in it["calls"]:
+                        if c["success"]:
+                            st.markdown(f"**Tool:** `{c['tool']}`")
+                            st.markdown(f"**Input:** `{json.dumps(c['input'])[:120]}...`" if len(json.dumps(c['input'])) > 120 else f"**Input:** `{json.dumps(c['input'])}`")
+                            st.caption(f"Result preview: {c['result_preview'][:150]}...")
+                        else:
+                            st.error(f"❌ `{c['tool']}` failed: {c.get('error', '?')}")
+            elif it["type"] == "final":
+                st.markdown(f"✅ **Iteration {it['iteration']} — Final answer** · {it['input_tokens'] + it['output_tokens']} tokens · {it['latency_s']}s")
+
+        # ── Final synthesis ──────────────────────────────────────────────────
+        if final_iter:
+            st.subheader("Executive Briefing")
+            st.markdown(final_iter["text"])
+
+        st.caption(
+            f"🔢 Total: in {loop['total_input_tokens']} + out {loop['total_output_tokens']} "
+            f"= **{loop['total_tokens']} tokens** across {len(iterations)} iteration(s)"
+        )

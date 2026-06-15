@@ -17,6 +17,6 @@ Build an AI-powered TPM Copilot that can analyze launch health, risks, blockers,
 | Day 9 | Feedback Agent | Analyze customer feedback | NLP | ✅ Done |
 | Day 10 | Dependency Agent | Track cross-team dependencies | Agent Reasoning | ✅ Done |
 | Day 11 | Evaluation Framework + Agent Harness | Evaluate AI outputs; formalize all Claude calls into a reusable AgentHarness (system prompt, input/output contract, retry, logging) | DeepEval, LLM Eval, Agent Harnessing | ✅ Done |
-| Day 12 | Multi-Agent System + Agent Loops | Agents orchestrating agents; upgrade from single-shot Claude calls to proper agentic loops (Claude calls tools, reasons on results, loops to final answer) | A2A, Agent Loops, Tool Use | ☐ |
+| Day 12 | Multi-Agent System + Agent Loops | Agents orchestrating agents; upgrade from single-shot Claude calls to proper agentic loops (Claude calls tools, reasons on results, loops to final answer) | A2A, Agent Loops, Tool Use | ✅ Done |
 | Day 13 | MCP Integration | Connect tools like GitHub/Jira via Model Context Protocol; wire escalation artifacts to real Slack/Jira | MCP, Tool Calling | ☐ |
 | Day 14 | Executive TPM Copilot | Full end-to-end demo: harness + loops + MCP + multi-agent in one executive-facing workflow | Agentic AI | ☐ |
