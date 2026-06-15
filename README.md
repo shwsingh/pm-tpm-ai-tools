@@ -183,6 +183,8 @@ flowchart LR
 **Legend** — yellow = UI, green = agent/infrastructure, blue = skill spec, purple = data/LLM, navy = user.
 All Claude calls route through `AgentHarness` → `Claude API`. The Day 12 orchestrator adds an `Agent Loop` layer on top.
 
+**Component Reference** (role + impact per node) → [shwsingh.github.io/pm-tpm-ai-tools/components.html](https://shwsingh.github.io/pm-tpm-ai-tools/components.html)
+
 Full per-day delta diagrams, planned-future layer, mindmap, and Gantt → [`challenge/project_evolution.md`](challenge/project_evolution.md).
 
 ## Project Structure

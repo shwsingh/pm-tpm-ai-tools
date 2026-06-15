@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Component Reference — AI TPM Copilot</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: #0d1117;
+    color: #e6edf3;
+    padding: 40px 32px;
+    max-width: 1060px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  /* ── Header ── */
+  .back-link { display: inline-block; margin-bottom: 20px; font-size: 0.82rem; color: #58a6ff; text-decoration: none; }
+  .back-link:hover { text-decoration: underline; }
+  .page-header { margin-bottom: 32px; }
+  .page-header h1 { font-size: 1.8rem; font-weight: 800; color: #f0f6fc; margin-bottom: 6px; }
+  .page-header p { color: #8b949e; font-size: 0.9rem; }
+
+  /* ── Tab bar ── */
+  .tabs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #21262d;
+  }
+  .tab {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 16px;
+    border-radius: 20px;
+    border: 1px solid #30363d;
+    background: #161b22;
+    color: #8b949e;
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .tab:hover { border-color: #58a6ff66; color: #c9d1d9; }
+  .tab.active { color: #f0f6fc; font-weight: 700; border-color: currentColor; }
+
+  .tab[data-cat="ui"].active       { color: #e3b341; background: #e3b34111; border-color: #e3b341; }
+  .tab[data-cat="agent"].active    { color: #56d364; background: #56d36411; border-color: #56d364; }
+  .tab[data-cat="skill"].active    { color: #58a6ff; background: #58a6ff11; border-color: #58a6ff; }
+  .tab[data-cat="data"].active     { color: #bc8cff; background: #bc8cff11; border-color: #bc8cff; }
+  .tab[data-cat="git"].active      { color: #94a3b8; background: #94a3b811; border-color: #94a3b8; }
+
+  .tab .count {
+    font-size: 0.68rem;
+    background: #21262d;
+    border-radius: 20px;
+    padding: 1px 7px;
+    color: #484f58;
+  }
+  .tab.active .count { background: transparent; color: inherit; opacity: 0.6; }
+
+  /* ── Section ── */
+  .section { display: none; }
+  .section.visible { display: block; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .section-header h2 { font-size: 1.1rem; font-weight: 700; }
+  .section-sub { font-size: 0.82rem; color: #8b949e; margin-top: 2px; }
+
+  .section-ui    .section-header h2 { color: #e3b341; }
+  .section-agent .section-header h2 { color: #56d364; }
+  .section-skill .section-header h2 { color: #58a6ff; }
+  .section-data  .section-header h2 { color: #bc8cff; }
+  .section-git   .section-header h2 { color: #94a3b8; }
+
+  /* ── Card Grid ── */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+
+  .card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    padding: 18px;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .card:hover { transform: translateY(-2px); }
+
+  .section-ui    .card:hover { border-color: #e3b34166; }
+  .section-agent .card:hover { border-color: #56d36466; }
+  .section-skill .card:hover { border-color: #58a6ff66; }
+  .section-data  .card:hover { border-color: #bc8cff66; }
+  .section-git   .card:hover { border-color: #94a3b866; }
+
+  .card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; }
+  .card-icon { font-size: 1.5rem; line-height: 1; }
+  .day-pill {
+    font-size: 0.68rem;
+    background: #21262d;
+    border: 1px solid #30363d;
+    border-radius: 20px;
+    padding: 2px 10px;
+    color: #8b949e;
+    font-family: monospace;
+  }
+  .card-name { font-weight: 700; font-size: 0.95rem; color: #f0f6fc; margin-bottom: 12px; }
+  .card-name a {
+    color: #58a6ff;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    position: relative;
+  }
+  .card-name a:hover { text-decoration: underline; color: #79c0ff; }
+
+  /* ── Tooltip ── */
+  .card-name a[data-tip]::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 0;
+    background: #1c2128;
+    border: 1px solid #30363d;
+    color: #c9d1d9;
+    font-size: 0.76rem;
+    font-weight: 400;
+    line-height: 1.5;
+    padding: 8px 12px;
+    border-radius: 8px;
+    width: 240px;
+    white-space: normal;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s;
+    z-index: 10;
+  }
+  .card-name a[data-tip]:hover::after { opacity: 1; }
+  .card-section { margin-top: 10px; }
+  .card-label { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 3px; }
+  .card-label.role   { color: #d2a8ff; }
+  .card-label.impact { color: #56d364; }
+  .card-text { font-size: 0.82rem; color: #8b949e; line-height: 1.55; }
+
+  /* ── Footer ── */
+  footer { margin-top: 48px; padding-top: 20px; border-top: 1px solid #21262d; font-size: 0.78rem; color: #484f58; text-align: center; }
+  footer a { color: #58a6ff; text-decoration: none; }
+</style>
+</head>
+<body>
+
+<a class="back-link" href="index.html">← Back to blog</a>
+
+<div class="page-header">
+  <h1>Component Reference</h1>
+  <p>Every component in the AI TPM Copilot — role and impact. Pick a category below.</p>
+</div>
+
+<!-- ── Tab bar ── -->
+<div class="tabs">
+  <div class="tab active" data-cat="ui">🟡 UI Modules <span class="count">9</span></div>
+  <div class="tab" data-cat="agent">🟢 Agent Infrastructure <span class="count">3</span></div>
+  <div class="tab" data-cat="skill">🔵 Skill Specs <span class="count">6</span></div>
+  <div class="tab" data-cat="data">🟣 Data &amp; LLM <span class="count">5</span></div>
+  <div class="tab" data-cat="git">⬛ Git Infrastructure <span class="count">3</span></div>
+</div>
+
+
+<!-- ════════ UI MODULES ════════ -->
+<div class="section section-ui visible" data-section="ui">
+  <div class="section-header">
+    <h2>🟡 UI Modules</h2>
+  </div>
+  <p class="section-sub" style="margin-bottom:20px">The nine Streamlit pages a TPM interacts with directly — one per capability built across Days 1–12.</p>
+  <div class="grid">
+
+    <div class="card">
+      <div class="card-top"><span class="card-icon">🚦</span><span class="day-pill">Day 2</span></div>
+      <div class="card-name"><a href="https://github.com/shwsingh/pm-tpm-ai-tools/blob/main/projects/tpm_pm_toolkit/app.py" target="_blank" data-tip="A heuristic scoring tool that reads a launch description and flags High / Medium / Low risk signals using keyword matching — no LLM required.">Launch Risk Analyzer ↗</a></div>
+      <div class="card-section"><div class="card-label role">Role</div><div class="card-text">Accepts a launch description; runs keyword-based risk scoring across High / Medium / Low tiers; returns an exec-ready risk summary.</div></div>
+      <div class="card-section"><div class="card-label impact">Impact</div><div class="card-text">Gives TPMs an instant risk read on any launch without an LLM call — fast, explainable, zero API cost.</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-top"><span class="card-icon">🐛</span><span class="day-pill">Day 5</span></div>
+      <div class="card-name"><a href="https://github.com/shwsingh/pm-tpm-ai-tools/blob/main/agents/bug_triage_agent.md" target="_blank" data-tip="An LLM-powered agent that reads a raw bug report and outputs severity (P0–P3), owner team, and escalation decision in structured JSON.">Bug Triage Agent ↗</a></div>
+      <div class="card-section"><div class="card-label role">Role</div><div class="card-text">Takes a raw bug report; Claude classifies severity (P0–P3), assigns an owner team, and decides whether to escalate.</div></div>
+      <div class="card-section"><div class="card-label impact">Impact</div><div class="card-text">Cuts triage time from minutes to seconds; consistent severity calls across the team.</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-top"><span class="card-icon">🔁</span><span class="day-pill">Day 6</span></div>
+      <div class="card-name"><a href="https://github.com/shwsingh/pm-tpm-ai-tools/blob/main/agents/agent_workflow.md" target="_blank" data-tip="A deterministic 3-stage pipeline where code controls the sequence: Ingest → Triage → Escalation Handler. Each stage feeds its output into the next via session state.">Agent Workflow ↗</a></div>
+      <div class="card-section"><div class="card-label role">Role</div><div class="card-text">3-stage pipeline UI: Ingest → Triage → Escalation Handler. Code controls the sequence; session state passes data between stages.</div></div>
+      <div class="card-section"><div class="card-label impact">Impact</div><div class="card-text">Demonstrates deterministic multi-step orchestration — the contrast that makes Day 12's agent loop meaningful.</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-top"><span class="card-icon">📊</span><span class="day-pill">Day 7</span></div>
+      <div class="card-name"><a href="https://github.com/shwsingh/pm-tpm-ai-tools/blob/main/skills/status_report.md" target="_blank" data-tip="Auto-generates an exec status report from pipeline state, then scores it on 5 quality dimensions using Claude-as-judge before a human confirms.">Status Report ↗</a></div>
+      <div class="card-section"><div class="card-label role">Role</div><div class="card-text">Auto-populates an exec status report from pipeline session state; runs a 5-dimension quality eval; human confirms before finalizing.</div></div>
+      <div class="card-section"><div class="card-label impact">Impact</div><div class="card-text">Removes the blank-page problem for weekly updates; quality eval catches weak reports before they reach executives.</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-top"><span class="card-icon">📚</span><span class="day-pill">Day 8</span></div>
+      <div class="card-name"><a href="https://github.com/shwsingh/pm-tpm-ai-tools/blob/main/skills/knowledge_base.md" target="_blank" data-tip="Upload .txt, .md, .docx, or .csv files — they are chunked and stored in session state. Keyword search returns matching passages as context.">Knowledge Base ↗</a></div>
+      <div class="card-section"><div class="card-label role">Role</div><div class="card-text">Upload .txt, .md, .docx, .csv files; stores chunked text in session state; keyword search returns matching passages.</div></div>
+      <div class="card-section"><div class="card-label impact">Impact</div><div class="card-text">Turns unstructured docs into a searchable context layer — the foundation for RAG in later days.</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-top"><span class="card-icon">💬</span><span class="day-pill">Day 9</span></div>
+      <div class="card-name"><a href="https://github.com/shwsingh/pm-tpm-ai-tools/blob/main/skills/feedback_agent.md" target="_blank" data-tip="Claude reads customer feedback items and returns per-item sentiment, themes, severity, and action — plus an aggregate summary with TPM next steps.">Feedback Agent ↗</a></div>
+      <div class="card-section"><div class="card-label role">Role</div><div class="card-text">Claude returns per-item sentiment / themes / severity / action plus aggregate top themes and TPM next steps.</div></div>
+      <div class="card-section"><div class="card-label impact">Impact</div><div class="card-text">Surfaces what customers actually care about in seconds; replaces manual tagging of feedback spreadsheets.</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-top"><span class="card-icon">🕸️</span><span class="day-pill">Day 10</span></div>
+      <div class="card-name"><a href="https://github.com/shwsingh/pm-tpm-ai-tools/blob/main/agents/dependency_agent.md" target="_blank" data-tip="Enter cross-team dependencies via a structured form. Claude reasons over the graph to identify critical path, cascade risks, and recommended TPM actions.">Dependency Agent ↗</a></div>
+      <div class="card-section"><div class="card-label role">Role</div><div class="card-text">Structured form to add cross-team dependencies; Claude reasons over the graph to identify critical path, cascade risks, and TPM actions.</div></div>
+      <div class="card-section"><div class="card-label impact">Impact</div><div class="card-text">Makes hidden cross-team risk visible before it becomes a slip; gives TPMs a defensible escalation narrative.</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-top"><span class="card-icon">🧪</span><span class="day-pill">Day 11</span></div>
+      <div class="card-name"><a href="https://github.com/shwsingh/pm-tpm-ai-tools/blob/main/design_decisions/day11_day12_implementation.md" target="_blank" data-tip="Runs a second Claude call that scores any skill output against the skill spec's evaluation rules (Claude-as-judge), returning pass/fail per criterion and a final score.">Eval Framework ↗</a></div>
+      <div class="card-section"><div class="card-label role">Role</div><div class="card-text">Scores any skill output against the skill spec's evaluation rules via a second Claude call (Claude-as-judge).</div></div>
+      <div class="card-section"><div class="card-label impact">Impact</div><div class="card-text">Makes quality measurable and repeatable; enables regression testing when prompts or models change.</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-top"><span class="card-icon">🧠</span><span class="day-pill">Day 12</span></div>
+      <div class="card-name"><a href="https://github.com/shwsingh/pm-tpm-ai-tools/blob/main/agents/orchestrator_agent.md" target="_blank" data-tip="The only surface where Claude drives its own reasoning. Free-text TPM request → agent loop → Claude picks tools → tools execute → exec briefing synthesis.">Orchestrator ↗</a></div>
+      <div class="card-section"><div class="card-label role">Role</div><div class="card-text">Free-text TPM request → agent loop → Claude picks tools → tools execute → Claude synthesizes an executive briefing.</div></div>
+      <div class="card-section"><div class="card-label impact">Impact</div><div class="card-text">The only surface where Claude drives its own reasoning trajectory — genuine multi-agent orchestration vs. scripted pipelines.</div></div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ════════ AGENT INFRASTRUCTURE ════════ -->
+<div class="section section-agent" data-section="agent">
+  <div class="section-header"><h2>🟢 Agent Infrastructure</h2></div>
+  <p class="section-sub" style="margin-bottom:20px">The plumbing that connects every Claude call — retry logic, token logging, and the loop pattern.</p>
+  <div class="grid">
+
+    <div class="card">
+      <div class="card-top"><span class="card-icon">⚙️</span></div>
+      <div class="card-name"><a href="https://github.com/shwsingh/pm-tpm-ai-tools/blob/main/design_decisions/day11_day12_implementation.md" target="_blank" data-tip="A Python class that wraps every Claude call with system prompt injection, JSON-parse retry (up to 2×), token logging, and session state recording.">AgentHarness ↗</a></div>
+      <div class="card-section"><div class="card-label role">Role</div><div class="card-text">Single gateway for every Claude call — system prompt injection, JSON-parse retry (up to 2×), token logging, session state recording.</div></div>
+      <div class="card-section"><div class="card-label impact">Impact</div><div class="card-text">Every Claude call is reproducible, observable, and evaluable. Token costs visible per call and cumulative across the session.</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-top"><span class="card-icon">🪜</span></div>
+      <div class="card-name"><a href="https://github.com/shwsingh/pm-tpm-ai-tools/blob/main/agents/agent_workflow.md" target="_blank" data-tip="Code-controlled sequence: Ingest → Triage → Escalation. Each stage passes its output to the next via session state. Contrast with the Day 12 loop where Claude controls its own flow.">3-Stage Pipeline ↗</a></div>
+      <div class="card-section"><div class="card-label role">Role</div><div class="card-text">Ingest → Triage → Escalation sequence. Code controls the flow; each stage passes its output as input to the next via session state.</div></div>
+      <div class="card-section"><div class="card-label impact">Impact</div><div class="card-text">Shows "code orchestrates Claude" — the deliberate contrast to the Day 12 loop where Claude orchestrates itself.</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-top"><span class="card-icon">🔄</span></div>
+      <div class="card-name"><a href="https://github.com/shwsingh/pm-tpm-ai-tools/blob/main/agents/orchestrator_agent.md" target="_blank" data-tip="Call Claude → check stop_reason → if tool_use, execute tools and feed results back → repeat until end_turn or 5 iterations. Claude decides what to call next.">Agent Loop ↗</a></div>
+      <div class="card-section"><div class="card-label role">Role</div><div class="card-text">Tool-use agentic loop: call Claude → check stop_reason → if tool_use, dispatch and feed results back → repeat until end_turn or 5 iterations.</div></div>
+      <div class="card-section"><div class="card-label impact">Impact</div><div class="card-text">Enables Claude to reason across multiple tool calls autonomously — foundation for Day 13 MCP and Day 14 full copilot.</div></div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ════════ SKILL SPECS ════════ -->
+<div class="section section-skill" data-section="skill">
+  <div class="section-header"><h2>🔵 Skill Specs</h2></div>
+  <p class="section-sub" style="margin-bottom:20px">Markdown prompt contracts — input/output schemas, evaluation rules, and upgrade paths. Not code; consumed by agents.</p>
+  <div class="grid">
+
+    <div class="card">
+      <div class="card-top"><span class="card-icon">📄</span></div>
+      <div class="card-name"><a href="https://github.com/shwsingh/pm-tpm-ai-tools/blob/main/skills/launch_risk_analysis.md" target="_blank" data-tip="Markdown prompt contract: input format, output JSON schema, evaluation rules, and expected output example for the Launch Risk Analyzer.">skill: launch_risk_analysis ↗</a></div>
+      <div class="card-section"><div class="card-label role">Role</div><div class="card-text">Input/output contract, JSON schema, evaluation rules, and expected output example for the Launch Risk Analyzer.</div></div>
+      <div class="card-section"><div class="card-label impact">Impact</div><div class="card-text">Decouples prompt logic from app code; reusable across any LLM or surface.</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-top"><span class="card-icon">📄</span></div>
+      <div class="card-name"><a href="https://github.com/shwsingh/pm-tpm-ai-tools/blob/main/skills/bug_triage.md" target="_blank" data-tip="Defines the one-bug-per-call rule, severity/owner/escalation output schema, and evaluation criteria. Prevents the batching anti-pattern.">skill: bug_triage ↗</a></div>
+      <div class="card-section"><div class="card-label role">Role</div><div class="card-text">One-bug-per-call rule, severity / owner / escalation output schema, and eval criteria for the triage agent.</div></div>
+      <div class="card-section"><div class="card-label impact">Impact</div><div class="card-text">Makes the triage contract explicit — prevents batching bugs, a known failure mode where Claude merges severities.</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-top"><span class="card-icon">📄</span></div>
+      <div class="card-name"><a href="https://github.com/shwsingh/pm-tpm-ai-tools/blob/main/skills/status_report.md" target="_blank" data-tip="5 quality dimensions — completeness, clarity, risk visibility, action orientation, exec tone — and the scoring rubric Claude-as-judge uses to evaluate reports.">skill: status_report ↗</a></div>
+      <div class="card-section"><div class="card-label role">Role</div><div class="card-text">5 quality dimensions (completeness, clarity, risk visibility, action orientation, exec tone) and scoring rubric.</div></div>
+      <div class="card-section"><div class="card-label impact">Impact</div><div class="card-text">The rubric is what makes Claude-as-judge produce meaningful scores vs. generic positive feedback.</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-top"><span class="card-icon">📄</span></div>
+      <div class="card-name"><a href="https://github.com/shwsingh/pm-tpm-ai-tools/blob/main/skills/knowledge_base.md" target="_blank" data-tip="Defines chunking strategy, keyword match logic, and retrieval output format. The contract lets the KB swap to vector search without changing callers.">skill: knowledge_base ↗</a></div>
+      <div class="card-section"><div class="card-label role">Role</div><div class="card-text">Chunking strategy, keyword match logic, and retrieval output format for the Knowledge Base.</div></div>
+      <div class="card-section"><div class="card-label impact">Impact</div><div class="card-text">Defines the retrieval contract so the KB can be swapped to vector search without changing callers.</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-top"><span class="card-icon">📄</span></div>
+      <div class="card-name"><a href="https://github.com/shwsingh/pm-tpm-ai-tools/blob/main/skills/feedback_agent.md" target="_blank" data-tip="Per-item + aggregate output schema, sentiment labels, severity thresholds, and TPM action format. Structured output enables direct Jira/Slack integration.">skill: feedback_agent ↗</a></div>
+      <div class="card-section"><div class="card-label role">Role</div><div class="card-text">Per-item + aggregate output schema, sentiment labels, severity thresholds, and TPM action format.</div></div>
+      <div class="card-section"><div class="card-label impact">Impact</div><div class="card-text">Structured output means feedback results can flow directly into downstream tools (Jira, Slack) without parsing.</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-top"><span class="card-icon">📄</span></div>
+      <div class="card-name"><a href="https://github.com/shwsingh/pm-tpm-ai-tools/blob/main/skills/dependency_agent.md" target="_blank" data-tip="Graph input schema, cascade detection reasoning pattern, critical path output format. Documents the Day 13 upgrade path to live Jira/GitHub data via MCP.">skill: dependency_agent ↗</a></div>
+      <div class="card-section"><div class="card-label role">Role</div><div class="card-text">Graph input schema, cascade detection reasoning pattern, critical path output format, and MCP upgrade path.</div></div>
+      <div class="card-section"><div class="card-label impact">Impact</div><div class="card-text">Explicitly documents the Day 13 upgrade path — MCP replaces the form input with live Jira/GitHub data.</div></div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ════════ DATA & LLM ════════ -->
+<div class="section section-data" data-section="data">
+  <div class="section-header"><h2>🟣 Data &amp; LLM</h2></div>
+  <p class="section-sub" style="margin-bottom:20px">Where state lives and how Claude is invoked — the runtime layer that connects every module.</p>
+  <div class="grid">
+
+    <div class="card">
+      <div class="card-top"><span class="card-icon">🤖</span></div>
+      <div class="card-name"><a href="https://github.com/shwsingh/pm-tpm-ai-tools/blob/main/projects/tpm_pm_toolkit/app.py" target="_blank" data-tip="The Anthropic Claude API — the single intelligence layer. All calls route through AgentHarness. Swapping models only requires changing the MODEL constant.">Claude API ↗</a></div>
+      <div class="card-section"><div class="card-label role">Role</div><div class="card-text">All calls route through AgentHarness. Day 12 also calls it directly inside the agent loop for tool-use decisions.</div></div>
+      <div class="card-section"><div class="card-label impact">Impact</div><div class="card-text">Single intelligence layer; swapping models only requires changing the MODEL constant in one place.</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-top"><span class="card-icon">💾</span></div>
+      <div class="card-name"><a href="https://github.com/shwsingh/pm-tpm-ai-tools/blob/main/projects/tpm_pm_toolkit/app.py" target="_blank" data-tip="Streamlit's in-memory key-value store used as the data bus between pipeline stages. Zero infrastructure cost — cleared on page reload.">Session State ↗</a></div>
+      <div class="card-section"><div class="card-label role">Role</div><div class="card-text">Streamlit in-memory bus passing data between pipeline stages. Cleared on page reload.</div></div>
+      <div class="card-section"><div class="card-label impact">Impact</div><div class="card-text">Zero infrastructure cost. The tradeoff — data resets on reload — is why Day 13 MCP replaces it with persistent context.</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-top"><span class="card-icon">📑</span></div>
+      <div class="card-name"><a href="https://github.com/shwsingh/pm-tpm-ai-tools/blob/main/skills/knowledge_base.md" target="_blank" data-tip="Text passages split from uploaded files and stored in session state. Keyword search scans these chunks at query time — the bottleneck RAG will replace with vector search.">Doc Chunks ↗</a></div>
+      <div class="card-section"><div class="card-label role">Role</div><div class="card-text">Text passages extracted from uploaded KB files; stored in session state; searched by keyword at query time.</div></div>
+      <div class="card-section"><div class="card-label impact">Impact</div><div class="card-text">Enables context-grounded answers without a vector DB. The chunking approach is the bottleneck RAG will fix.</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-top"><span class="card-icon">🕸️</span></div>
+      <div class="card-name"><a href="https://github.com/shwsingh/pm-tpm-ai-tools/blob/main/agents/dependency_agent.md" target="_blank" data-tip="A list of dependency dicts (team, owner, due date, status) built from the structured form. Serialized to JSON and sent to Claude for critical path and cascade reasoning.">Dependency Graph ↗</a></div>
+      <div class="card-section"><div class="card-label role">Role</div><div class="card-text">List of dependency dicts accumulated via the structured form; serialized to JSON and sent to Claude for graph reasoning.</div></div>
+      <div class="card-section"><div class="card-label impact">Impact</div><div class="card-text">Structured representation keeps cascade reasoning grounded — Claude can't hallucinate deps that weren't entered.</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-top"><span class="card-icon">📈</span></div>
+      <div class="card-name"><a href="https://github.com/shwsingh/pm-tpm-ai-tools/blob/main/design_decisions/day11_day12_implementation.md" target="_blank" data-tip="A running list of meta dicts (skill, model, tokens, latency) appended by AgentHarness after every Claude call. Powers the session-level Token Usage Dashboard.">Token Log ↗</a></div>
+      <div class="card-section"><div class="card-label role">Role</div><div class="card-text">Running list of meta dicts from every AgentHarness call; powers the Token Usage Dashboard at the bottom of the app.</div></div>
+      <div class="card-section"><div class="card-label impact">Impact</div><div class="card-text">Makes cost visible in real time; the data needed to compare model and prompt efficiency across days.</div></div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ════════ GIT INFRASTRUCTURE ════════ -->
+<div class="section section-git" data-section="git">
+  <div class="section-header"><h2>⬛ Git Infrastructure</h2></div>
+  <p class="section-sub" style="margin-bottom:20px">The automation layer that keeps documentation in sync with code across every day of the challenge.</p>
+  <div class="grid">
+
+    <div class="card">
+      <div class="card-top"><span class="card-icon">📝</span></div>
+      <div class="card-name"><a href="https://github.com/shwsingh/pm-tpm-ai-tools/commits/main" target="_blank" data-tip="Day N — ... commit messages mark each day's milestone. The naming pattern is what triggers the post-commit hook automatically on every day commit.">Git Commits ↗</a></div>
+      <div class="card-section"><div class="card-label role">Role</div><div class="card-text">Day N — ... commit messages mark each day's milestone and trigger the post-commit hook automatically.</div></div>
+      <div class="card-section"><div class="card-label impact">Impact</div><div class="card-text">Naming convention doubles as machine-readable signal — no extra config or tooling required.</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-top"><span class="card-icon">🪝</span></div>
+      <div class="card-name"><a href="https://github.com/shwsingh/pm-tpm-ai-tools/blob/main/scripts/post-commit-hook.sh" target="_blank" data-tip="A bash script installed in .git/hooks that fires after every Day N commit. Checks 4 tracking files were updated and prints a fix command if any are missing.">post-commit Hook ↗</a></div>
+      <div class="card-section"><div class="card-label role">Role</div><div class="card-text">Fires after every Day N commit; checks that progress_tracker.md, 14_day_plan.md, README.md, and a design_decisions/dayN file were all updated.</div></div>
+      <div class="card-section"><div class="card-label impact">Impact</div><div class="card-text">Catches documentation drift at commit time — the earliest possible feedback loop, before the next session starts.</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-top"><span class="card-icon">🗂️</span></div>
+      <div class="card-name"><a href="https://github.com/shwsingh/pm-tpm-ai-tools/blob/main/challenge/progress_tracker.md" target="_blank" data-tip="Three files the hook enforces: progress_tracker.md (status + lessons), 14_day_plan.md (✅ done markers), README.md (badge, table, diagram).">Tracking Files ↗</a></div>
+      <div class="card-section"><div class="card-label role">Role</div><div class="card-text">progress_tracker.md (status + lessons), 14_day_plan.md (✅ done markers), README.md (badge, table, diagram) — the three files the hook enforces.</div></div>
+      <div class="card-section"><div class="card-label impact">Impact</div><div class="card-text">Single source of truth for progress; stays in sync with code because the hook makes skipping it friction.</div></div>
+    </div>
+
+  </div>
+</div>
+
+
+<footer>
+  <p>Part of the <a href="index.html">AI TPM Copilot</a> — 14-day vibe coding challenge by Shweta Singh</p>
+</footer>
+
+<script>
+  const tabs = document.querySelectorAll('.tab');
+  const sections = document.querySelectorAll('.section');
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const cat = tab.dataset.cat;
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      sections.forEach(s => {
+        s.classList.toggle('visible', s.dataset.section === cat);
+      });
+    });
+  });
+</script>
+</body>
+</html>
