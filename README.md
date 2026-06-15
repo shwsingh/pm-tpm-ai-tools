@@ -133,6 +133,10 @@ flowchart LR
     DEPS[("Dependency Graph")]:::store
     TOKLOG[("Token Log")]:::store
 
+    HOOK["post-commit Hook<br/>Day N checker"]:::infra
+    TRACK[("Tracking Files<br/>tracker · plan · README")]:::store
+    GIT[("Git Commits")]:::store
+
     User --> LRA
     User --> D5
     User --> WF
@@ -164,12 +168,16 @@ flowchart LR
     KB --> CHUNKS
     KB --> S_KB
 
+    GIT --> HOOK
+    HOOK --> TRACK
+
     classDef user fill:#1e293b,stroke:#60a5fa,color:#f8fafc,font-weight:bold
     classDef ui fill:#a16207,stroke:#fde68a,color:#fffbeb,font-weight:bold
     classDef agent fill:#166534,stroke:#86efac,color:#f0fdf4,font-weight:bold
     classDef skill fill:#1e40af,stroke:#93c5fd,color:#eff6ff
     classDef store fill:#6d28d9,stroke:#c4b5fd,color:#f5f3ff
     classDef llm fill:#7c3aed,stroke:#c4b5fd,color:#f5f3ff,font-weight:bold
+    classDef infra fill:#334155,stroke:#94a3b8,color:#f1f5f9,font-weight:bold
 ```
 
 **Legend** — yellow = UI, green = agent/infrastructure, blue = skill spec, purple = data/LLM, navy = user.
