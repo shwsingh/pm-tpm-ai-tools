@@ -254,16 +254,19 @@ Location: [`projects/tpm_pm_toolkit/app.py`](projects/tpm_pm_toolkit/app.py)
 
 ## Planned Advanced Capabilities
 
-### Days 9–14 Roadmap
+### Days 11–14 Roadmap
 
 | Day | Capability | What gets added |
 |-----|-----------|----------------|
-| Day 9  | Feedback Agent | Claude replaces heuristic triage classifier |
-| Day 10 | Dependency Agent | Cross-team dependency tracking with agent reasoning |
-| Day 11 | Evaluation Framework | DeepEval scoring against golden sets |
-| Day 12 | Multi-Agent System | Agents orchestrating other agents (A2A) |
-| Day 13 | MCP Integration | GitHub, Jira, Slack tool calling |
-| Day 14 | Executive TPM Copilot | Full end-to-end demo system |
+| Day 11 | Evaluation Framework + **Agent Harness** | DeepEval scoring; formalize all Claude calls into a reusable `AgentHarness` (system prompt, retry, logging) |
+| Day 12 | Multi-Agent System + **Agent Loops** | Agents orchestrating agents (A2A); upgrade single-shot Claude calls to proper agentic loops (tool calling → reason → loop) |
+| Day 13 | MCP Integration | GitHub, Jira, Slack tool calling via Model Context Protocol |
+| Day 14 | Executive TPM Copilot | Full end-to-end demo: harness + loops + MCP + multi-agent |
+
+**Why Agent Harness + Agent Loops were added** (no extra days):
+- **Harness** makes every Claude call reproducible and evaluable — required before Day 11 evaluation produces meaningful scores
+- **Loops** are what separates "Claude as a function" from "Claude as a reasoner" — required before Day 12 multi-agent becomes genuine orchestration
+- See [`design_decisions/day11_day12_agent_harness_loops.md`](design_decisions/day11_day12_agent_harness_loops.md) for full rationale
 
 ### TPM MCP Server (Day 13)
 
