@@ -1,6 +1,7 @@
 import re
 import json
 import os
+import time
 import streamlit as st
 
 st.set_page_config(
@@ -13,6 +14,70 @@ st.set_page_config(
 from dotenv import load_dotenv
 load_dotenv()
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+
+# ── Agent Harness (Day 11) ────────────────────────────────────────────────────
+MODEL = "claude-opus-4-7"
+
+
+class AgentHarness:
+    """Single reusable wrapper for every Claude call: retry, JSON parse, token logging."""
+
+    def __init__(self, skill_name: str, system_prompt: str, api_key: str, max_tokens: int = 2048):
+        self.skill_name = skill_name
+        self.system_prompt = system_prompt
+        self.api_key = api_key
+        self.max_tokens = max_tokens
+
+    def run(self, user_input: str, max_retries: int = 2) -> dict:
+        """Returns {"output": parsed_dict, "meta": {tokens, latency, model, attempt}}."""
+        import anthropic
+        client = anthropic.Anthropic(api_key=self.api_key)
+        last_error = None
+
+        for attempt in range(max_retries + 1):
+            t0 = time.time()
+            response = client.messages.create(
+                model=MODEL,
+                max_tokens=self.max_tokens,
+                system=self.system_prompt,
+                messages=[{"role": "user", "content": user_input}],
+            )
+            latency = round(time.time() - t0, 2)
+            raw = response.content[0].text.strip()
+            if raw.startswith("```"):
+                raw = re.sub(r"^```[a-z]*\n?", "", raw)
+                raw = re.sub(r"\n?```$", "", raw)
+            try:
+                output = json.loads(raw)
+                meta = {
+                    "skill": self.skill_name,
+                    "model": MODEL,
+                    "attempt": attempt + 1,
+                    "latency_s": latency,
+                    "input_tokens": response.usage.input_tokens,
+                    "output_tokens": response.usage.output_tokens,
+                    "total_tokens": response.usage.input_tokens + response.usage.output_tokens,
+                }
+                if "_token_log" not in st.session_state:
+                    st.session_state["_token_log"] = []
+                st.session_state["_token_log"].append(meta)
+                return {"output": output, "meta": meta}
+            except json.JSONDecodeError as e:
+                last_error = e
+
+        raise ValueError(
+            f"AgentHarness({self.skill_name}): JSON parse failed after "
+            f"{max_retries + 1} attempts — {last_error}"
+        )
+
+
+def _show_token_usage(meta: dict):
+    st.caption(
+        f"🔢 `{meta['skill']}` · model: `{meta['model']}` · "
+        f"in {meta['input_tokens']} + out {meta['output_tokens']} = "
+        f"**{meta['total_tokens']} tokens** · {meta['latency_s']}s"
+        + (f" · retry {meta['attempt']}" if meta['attempt'] > 1 else "")
+    )
 
 st.markdown("""
 <style>
@@ -105,8 +170,8 @@ with st.sidebar:
     st.title("🏆 Challenge Progress")
     st.caption("TPM/PM AI Toolkit Build Journey")
 
-    st.progress(10 / 14)
-    st.metric("Overall Progress", "10 / 14 days", "+1 today")
+    st.progress(11 / 14)
+    st.metric("Overall Progress", "11 / 14 days", "+1 today")
 
     st.divider()
 
@@ -121,9 +186,10 @@ with st.sidebar:
     st.write("• Day 8 — Knowledge Base (RAG)")
     st.write("• Day 9 — Feedback Agent + Claude triage")
     st.write("• Day 10 — Dependency Agent")
+    st.write("• Day 11 — Agent Harness + Evaluation Framework")
 
     st.subheader("🎯 Next Milestone")
-    st.info("Day 11 — Evaluation Framework: score AI outputs against golden sets with DeepEval.")
+    st.info("Day 12 — Multi-Agent System + Agent Loops: Claude drives tool calls in a loop.")
 
 # Header
 st.markdown("""
@@ -413,26 +479,16 @@ or component cannot be determined. Set escalate=true only for P0 or confirmed in
 
 
 def triage_with_claude(bug_text: str, api_key: str) -> dict:
-    """LLM-backed triage using Claude. Same output contract as triage()."""
+    """LLM-backed triage via AgentHarness. Same output contract as triage()."""
     try:
-        import anthropic
-        client = anthropic.Anthropic(api_key=api_key)
-        response = client.messages.create(
-            model="claude-sonnet-4-6",
-            max_tokens=512,
-            system=_TRIAGE_SYSTEM,
-            messages=[{"role": "user", "content": f"Bug report:\n{bug_text.strip()}"}]
-        )
-        raw = response.content[0].text.strip()
-        # Strip markdown code fences if present
-        if raw.startswith("```"):
-            raw = re.sub(r"^```[a-z]*\n?", "", raw)
-            raw = re.sub(r"\n?```$", "", raw)
-        return json.loads(raw)
+        harness = AgentHarness("bug_triage", _TRIAGE_SYSTEM, api_key, max_tokens=512)
+        result = harness.run(f"Bug report:\n{bug_text.strip()}")
+        st.session_state["_last_triage_meta"] = result["meta"]
+        return result["output"]
     except Exception as e:
-        result = triage(bug_text)
-        result["_llm_error"] = str(e)
-        return result
+        fallback = triage(bug_text)
+        fallback["_llm_error"] = str(e)
+        return fallback
 
 
 def triage(bug_text: str) -> dict:
@@ -639,6 +695,8 @@ if st.button("Triage Bugs"):
                 f"📩 {lead_count} bug(s) flagged as **Needs Lead Review** - "
                 "please reach out to **Shweta (Lead)** for triage discussion before acting."
             )
+        if ANTHROPIC_API_KEY and st.session_state.get("_last_triage_meta"):
+            _show_token_usage(st.session_state["_last_triage_meta"])
 
 st.divider()
 
@@ -1224,20 +1282,11 @@ P3 = minor cosmetic, low-impact. Calibrate carefully — "hard to find button" i
 
 
 def analyze_feedback(feedback_text: str, api_key: str) -> dict:
-    """Send feedback to Claude and return structured analysis."""
-    import anthropic
-    client = anthropic.Anthropic(api_key=api_key)
-    response = client.messages.create(
-        model="claude-sonnet-4-6",
-        max_tokens=2048,
-        system=_FEEDBACK_SYSTEM,
-        messages=[{"role": "user", "content": f"Customer feedback items:\n\n{feedback_text.strip()}"}]
-    )
-    raw = response.content[0].text.strip()
-    if raw.startswith("```"):
-        raw = re.sub(r"^```[a-z]*\n?", "", raw)
-        raw = re.sub(r"\n?```$", "", raw)
-    return json.loads(raw)
+    """Analyze customer feedback via AgentHarness."""
+    harness = AgentHarness("feedback_agent", _FEEDBACK_SYSTEM, api_key, max_tokens=2048)
+    result = harness.run(f"Customer feedback items:\n\n{feedback_text.strip()}")
+    st.session_state["_last_feedback_meta"] = result["meta"]
+    return result["output"]
 
 
 if not ANTHROPIC_API_KEY:
@@ -1265,6 +1314,9 @@ else:
                     st.session_state["feedback_analysis"] = result
                 except Exception as e:
                     st.error(f"Analysis failed: {e}")
+
+    if st.session_state.get("_last_feedback_meta"):
+        _show_token_usage(st.session_state["_last_feedback_meta"])
 
     analysis = st.session_state.get("feedback_analysis")
     if analysis:
@@ -1353,19 +1405,11 @@ TPM actions must be specific: name the teams, name the ask, give a timeframe."""
 
 
 def analyze_dependencies(deps: list, api_key: str) -> dict:
-    import anthropic
-    client = anthropic.Anthropic(api_key=api_key)
-    response = client.messages.create(
-        model="claude-sonnet-4-6",
-        max_tokens=2048,
-        system=_DEP_SYSTEM,
-        messages=[{"role": "user", "content": f"Dependencies:\n{json.dumps(deps, indent=2)}"}]
-    )
-    raw = response.content[0].text.strip()
-    if raw.startswith("```"):
-        raw = re.sub(r"^```[a-z]*\n?", "", raw)
-        raw = re.sub(r"\n?```$", "", raw)
-    return json.loads(raw)
+    """Analyze dependency graph via AgentHarness."""
+    harness = AgentHarness("dependency_agent", _DEP_SYSTEM, api_key, max_tokens=2048)
+    result = harness.run(f"Dependencies:\n{json.dumps(deps, indent=2)}")
+    st.session_state["_last_dep_meta"] = result["meta"]
+    return result["output"]
 
 
 # ── Dependency input form ────────────────────────────────────────────────────
@@ -1434,6 +1478,9 @@ if deps:
             except Exception as e:
                 st.error(f"Analysis failed: {e}")
 
+    if st.session_state.get("_last_dep_meta"):
+        _show_token_usage(st.session_state["_last_dep_meta"])
+
 # ── Analysis results ─────────────────────────────────────────────────────────
 analysis = st.session_state.get("dep_analysis")
 if analysis and deps:
@@ -1490,3 +1537,175 @@ if analysis and deps:
 
 elif not deps:
     st.info("Add at least one dependency above to get started.")
+
+
+# ── Day 11: Evaluation Framework ─────────────────────────────────────────────
+
+st.markdown('<div class="section-title">🧪 Day 11: Evaluation Framework</div>', unsafe_allow_html=True)
+
+st.write(
+    "Score any agent output against its skill spec's evaluation rules using Claude as judge. "
+    "Select a skill, paste sample input, run it through the harness, and get a per-criterion pass/fail score."
+)
+
+_EVAL_RULES = {
+    "bug_triage": """
+- severity is one of P0/P1/P2/P3/Unknown — never a made-up value
+- component is identified (not Unknown) when the bug text mentions a recognisable system area
+- needs_lead is true when severity is Unknown or evidence is thin
+- escalate is true only for P0 or confirmed incidents — not for every P1
+- summary is a single line combining severity, component, and a short description
+- next_action is specific and actionable, not vague ("investigate" is not acceptable)
+""",
+    "feedback_agent": """
+- every item has a sentiment label (Positive/Negative/Neutral/Mixed)
+- every item has at least one theme
+- severity is calibrated — cosmetic issues are never P0
+- P0/P1 items appear in the critical_items list in the summary
+- tpm_next_steps are specific enough to act on (team name + ask + timeframe)
+- top_themes reflect patterns across items, not just one item's keywords
+""",
+    "dependency_agent": """
+- health is Green/Yellow/Red — Red only when blockers exist on the critical path
+- critical_path lists only deps that gate other deps or the final launch
+- cascading_risks are identified when a blocked dep feeds another dep
+- recommended_action names the teams, the ask, and a timeframe
+- escalate is true only for Blocked or At Risk items on the critical path
+- exec_summary is 2-3 sentences and usable in a status report without editing
+""",
+}
+
+_EVAL_SYSTEM = """You are an AI output evaluator for a TPM Copilot system.
+Given evaluation rules and an agent's JSON output, score each rule as PASS or FAIL.
+Return ONLY a JSON object (no markdown):
+{
+  "scores": [
+    {"criterion": "<rule text>", "result": "PASS" | "FAIL", "reason": "<one sentence>"}
+  ],
+  "passed": <int>,
+  "total": <int>,
+  "grade": "A" | "B" | "C" | "F",
+  "improvement_suggestions": ["<suggestion 1>", "<suggestion 2>"]
+}
+Grade: A = all pass, B = 1 fail, C = 2 fails, F = 3+ fails."""
+
+_SKILL_INPUT_PLACEHOLDERS = {
+    "bug_triage": "The checkout page throws 500 errors for all EU users since last deploy. Revenue is dropping.",
+    "feedback_agent": "App crashes every time I try to checkout on mobile.\n\nLove the new dashboard, much easier to use.\n\nI was charged twice and can't get a refund.",
+    "dependency_agent": '[{"id":1,"dependent_team":"Checkout","provider_team":"Auth","deliverable":"SSO API","due_date":"2026-06-20","status":"Blocked"}]',
+}
+
+_SKILL_SYSTEMS = {
+    "bug_triage": _TRIAGE_SYSTEM,
+    "feedback_agent": _FEEDBACK_SYSTEM,
+    "dependency_agent": _DEP_SYSTEM,
+}
+
+_SKILL_MAX_TOKENS = {"bug_triage": 512, "feedback_agent": 2048, "dependency_agent": 2048}
+
+if not ANTHROPIC_API_KEY:
+    st.warning("Add your Anthropic API key in `.env` to use the Evaluation Framework.")
+else:
+    ev_col1, ev_col2 = st.columns([1, 3])
+    skill_choice = ev_col1.selectbox(
+        "Skill to evaluate",
+        options=list(_EVAL_RULES.keys()),
+        format_func=lambda s: s.replace("_", " ").title()
+    )
+    eval_input = ev_col2.text_area(
+        "Sample input for this skill",
+        value=_SKILL_INPUT_PLACEHOLDERS[skill_choice],
+        height=100,
+    )
+
+    if st.button("Run & Evaluate", type="primary"):
+        with st.spinner("Running agent then evaluating output..."):
+            try:
+                # Step 1: run through harness
+                harness = AgentHarness(
+                    skill_choice,
+                    _SKILL_SYSTEMS[skill_choice],
+                    ANTHROPIC_API_KEY,
+                    max_tokens=_SKILL_MAX_TOKENS[skill_choice],
+                )
+                agent_result = harness.run(eval_input)
+                agent_output = agent_result["output"]
+                agent_meta = agent_result["meta"]
+
+                # Step 2: evaluate output with Claude as judge
+                eval_harness = AgentHarness("evaluator", _EVAL_SYSTEM, ANTHROPIC_API_KEY, max_tokens=1024)
+                eval_prompt = (
+                    f"Skill: {skill_choice}\n\n"
+                    f"Evaluation rules:\n{_EVAL_RULES[skill_choice]}\n\n"
+                    f"Agent output:\n{json.dumps(agent_output, indent=2)}"
+                )
+                eval_result = eval_harness.run(eval_prompt)
+                eval_output = eval_result["output"]
+                eval_meta = eval_result["meta"]
+
+                st.session_state["eval_result"] = {
+                    "skill": skill_choice,
+                    "agent_output": agent_output,
+                    "agent_meta": agent_meta,
+                    "eval_output": eval_output,
+                    "eval_meta": eval_meta,
+                }
+            except Exception as e:
+                st.error(f"Evaluation failed: {e}")
+
+    ev = st.session_state.get("eval_result")
+    if ev:
+        eo = ev["eval_output"]
+        grade = eo.get("grade", "?")
+        passed = eo.get("passed", 0)
+        total = eo.get("total", 0)
+        grade_color = {"A": "🟢", "B": "🟡", "C": "🟠", "F": "🔴"}.get(grade, "⚪")
+
+        st.subheader(f"Evaluation: {ev['skill'].replace('_', ' ').title()}")
+
+        m1, m2, m3 = st.columns(3)
+        m1.metric("Grade", f"{grade_color} {grade}")
+        m2.metric("Criteria Passed", f"{passed} / {total}")
+        m3.metric("Model", ev["agent_meta"]["model"])
+
+        _show_token_usage(ev["agent_meta"])
+        _show_token_usage(ev["eval_meta"])
+
+        scores = eo.get("scores", [])
+        if scores:
+            st.markdown("**Criterion Scores:**")
+            for s in scores:
+                icon = "✅" if s["result"] == "PASS" else "❌"
+                st.markdown(f"{icon} **{s['criterion'].strip()}** — {s['reason']}")
+
+        suggestions = eo.get("improvement_suggestions", [])
+        if suggestions:
+            st.markdown("**Improvement Suggestions:**")
+            for i, sug in enumerate(suggestions, 1):
+                st.markdown(f"{i}. {sug}")
+
+        with st.expander("Raw agent output"):
+            st.json(ev["agent_output"])
+
+# ── Token Usage Dashboard ─────────────────────────────────────────────────────
+token_log = st.session_state.get("_token_log", [])
+if token_log:
+    st.divider()
+    st.markdown("### 🔢 Session Token Usage")
+    total_in = sum(e["input_tokens"] for e in token_log)
+    total_out = sum(e["output_tokens"] for e in token_log)
+    total_all = sum(e["total_tokens"] for e in token_log)
+    calls = len(token_log)
+
+    tc1, tc2, tc3, tc4 = st.columns(4)
+    tc1.metric("Total API Calls", calls)
+    tc2.metric("Input Tokens", total_in)
+    tc3.metric("Output Tokens", total_out)
+    tc4.metric("Total Tokens", total_all)
+
+    with st.expander("Per-call breakdown"):
+        for i, entry in enumerate(token_log, 1):
+            st.caption(
+                f"#{i} `{entry['skill']}` — in {entry['input_tokens']} + out {entry['output_tokens']} "
+                f"= {entry['total_tokens']} tokens · {entry['latency_s']}s"
+            )
