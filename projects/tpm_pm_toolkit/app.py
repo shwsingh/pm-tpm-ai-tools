@@ -105,8 +105,8 @@ with st.sidebar:
     st.title("🏆 Challenge Progress")
     st.caption("TPM/PM AI Toolkit Build Journey")
 
-    st.progress(9 / 14)
-    st.metric("Overall Progress", "9 / 14 days", "+1 today")
+    st.progress(10 / 14)
+    st.metric("Overall Progress", "10 / 14 days", "+1 today")
 
     st.divider()
 
@@ -120,9 +120,10 @@ with st.sidebar:
     st.write("• Day 7 — Status Report Skill")
     st.write("• Day 8 — Knowledge Base (RAG)")
     st.write("• Day 9 — Feedback Agent + Claude triage")
+    st.write("• Day 10 — Dependency Agent")
 
     st.subheader("🎯 Next Milestone")
-    st.info("Day 10 — Dependency Agent: cross-team dependency tracking with agent reasoning.")
+    st.info("Day 11 — Evaluation Framework: score AI outputs against golden sets with DeepEval.")
 
 # Header
 st.markdown("""
@@ -1310,3 +1311,182 @@ else:
                 st.markdown(f"**Themes:** {', '.join(th) if th else '—'}")
                 st.markdown(f"**Severity:** {sev}  |  **Sentiment:** {sent}")
                 st.markdown(f"**TPM Action:** {item.get('action', '—')}")
+
+
+# ── Day 10: Dependency Agent ──────────────────────────────────────────────────
+
+st.markdown('<div class="section-title">🔗 Day 10: Dependency Agent</div>', unsafe_allow_html=True)
+
+st.write(
+    "Track cross-team dependencies for your launch. Add each dependency below, "
+    "then let Claude reason across the full graph to identify the critical path, "
+    "cascading risks, and prioritized TPM actions."
+)
+
+_DEP_SYSTEM = """You are a senior TPM analyzing cross-team launch dependencies.
+Given a JSON list of dependencies, return ONLY a JSON object (no markdown, no explanation):
+{
+  "health": "Green" | "Yellow" | "Red",
+  "critical_path": [<list of dep ids that gate the launch>],
+  "cascading_risks": [
+    {"chain": [<id>, <id>], "description": "<how one blocked dep cascades into others>"}
+  ],
+  "dependencies": [
+    {
+      "id": <int>,
+      "risk_level": "Low" | "Medium" | "High" | "Critical",
+      "reasoning": "<why this risk level>",
+      "recommended_action": "<one specific, role-named TPM action>",
+      "escalate": <boolean>
+    }
+  ],
+  "tpm_actions": ["<action 1>", "<action 2>", "<action 3>"],
+  "exec_summary": "<2-3 sentence exec-ready summary citing top risk and recommendation>"
+}
+
+Risk calibration:
+- Blocked + on critical path = Critical. At Risk + on critical path = High.
+- Blocked but not blocking others = High. At Risk, not on critical path = Medium.
+- On Track = Low unless due date is within 3 days.
+Cascading risk: if dep A feeds dep B (same provider/dependent chain), and A is blocked/at-risk, flag B too.
+TPM actions must be specific: name the teams, name the ask, give a timeframe."""
+
+
+def analyze_dependencies(deps: list, api_key: str) -> dict:
+    import anthropic
+    client = anthropic.Anthropic(api_key=api_key)
+    response = client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=2048,
+        system=_DEP_SYSTEM,
+        messages=[{"role": "user", "content": f"Dependencies:\n{json.dumps(deps, indent=2)}"}]
+    )
+    raw = response.content[0].text.strip()
+    if raw.startswith("```"):
+        raw = re.sub(r"^```[a-z]*\n?", "", raw)
+        raw = re.sub(r"\n?```$", "", raw)
+    return json.loads(raw)
+
+
+# ── Dependency input form ────────────────────────────────────────────────────
+if "dependencies" not in st.session_state:
+    st.session_state["dependencies"] = []
+
+with st.form("add_dependency", clear_on_submit=True):
+    st.markdown("**Add a Dependency**")
+    fc1, fc2 = st.columns(2)
+    dep_team = fc1.text_input("Dependent team", placeholder="e.g. Checkout")
+    prov_team = fc2.text_input("Provider team", placeholder="e.g. Auth")
+    deliverable = st.text_input("Deliverable", placeholder="e.g. SSO token refresh API")
+    fd1, fd2 = st.columns(2)
+    due_date = fd1.text_input("Due date", placeholder="e.g. 2026-06-20")
+    status = fd2.selectbox("Status", ["On Track", "At Risk", "Blocked"])
+    add_dep = st.form_submit_button("Add Dependency")
+
+if add_dep:
+    if not dep_team.strip() or not prov_team.strip() or not deliverable.strip():
+        st.warning("Dependent team, provider team, and deliverable are required.")
+    else:
+        new_dep = {
+            "id": len(st.session_state["dependencies"]) + 1,
+            "dependent_team": dep_team.strip(),
+            "provider_team": prov_team.strip(),
+            "deliverable": deliverable.strip(),
+            "due_date": due_date.strip() or "TBD",
+            "status": status,
+        }
+        st.session_state["dependencies"].append(new_dep)
+        st.success(f"Added: {dep_team} ← {prov_team}: {deliverable}")
+
+# ── Dependency table ─────────────────────────────────────────────────────────
+deps = st.session_state["dependencies"]
+
+if deps:
+    status_icon = {"On Track": "🟢", "At Risk": "🟡", "Blocked": "🔴"}
+    st.subheader(f"Dependencies ({len(deps)})")
+
+    header_cols = st.columns([1, 2, 2, 3, 2, 2])
+    for col, label in zip(header_cols, ["#", "Dependent", "Provider", "Deliverable", "Due", "Status"]):
+        col.markdown(f"**{label}**")
+
+    for d in deps:
+        row = st.columns([1, 2, 2, 3, 2, 2])
+        row[0].write(d["id"])
+        row[1].write(d["dependent_team"])
+        row[2].write(d["provider_team"])
+        row[3].write(d["deliverable"])
+        row[4].write(d["due_date"])
+        row[5].write(f"{status_icon.get(d['status'], '')} {d['status']}")
+
+    col_clear, col_analyze = st.columns([1, 3])
+    if col_clear.button("Clear All"):
+        st.session_state["dependencies"] = []
+        st.session_state.pop("dep_analysis", None)
+        st.rerun()
+
+    if not ANTHROPIC_API_KEY:
+        st.warning("Add your Anthropic API key in `.env` to run Claude dependency analysis.")
+    elif col_analyze.button("Analyze Dependencies", type="primary"):
+        with st.spinner("Claude is reasoning across your dependency graph..."):
+            try:
+                result = analyze_dependencies(deps, ANTHROPIC_API_KEY)
+                st.session_state["dep_analysis"] = result
+            except Exception as e:
+                st.error(f"Analysis failed: {e}")
+
+# ── Analysis results ─────────────────────────────────────────────────────────
+analysis = st.session_state.get("dep_analysis")
+if analysis and deps:
+    health = analysis.get("health", "Unknown")
+    health_color = {"Green": "🟢", "Yellow": "🟡", "Red": "🔴"}.get(health, "⚪")
+
+    st.divider()
+    st.subheader("Dependency Analysis")
+
+    h1, h2, h3, h4 = st.columns(4)
+    h1.metric("Overall Health", f"{health_color} {health}")
+    h2.metric("Critical Path", len(analysis.get("critical_path", [])))
+    h3.metric("Cascading Risks", len(analysis.get("cascading_risks", [])))
+    escalate_count = sum(1 for d in analysis.get("dependencies", []) if d.get("escalate"))
+    h4.metric("Escalations Needed", escalate_count)
+
+    exec_summary = analysis.get("exec_summary", "")
+    if exec_summary:
+        st.info(f"**Exec Summary:** {exec_summary}")
+
+    cascades = analysis.get("cascading_risks", [])
+    if cascades:
+        st.markdown("**Cascading Risk Chains:**")
+        for c in cascades:
+            chain_ids = " → ".join(f"Dep #{i}" for i in c.get("chain", []))
+            st.warning(f"⛓️ {chain_ids}: {c.get('description', '')}")
+
+    tpm_actions = analysis.get("tpm_actions", [])
+    if tpm_actions:
+        st.markdown("**Prioritized TPM Actions:**")
+        for i, action in enumerate(tpm_actions, 1):
+            st.markdown(f"{i}. {action}")
+
+    st.subheader("Per-Dependency Risk Breakdown")
+    risk_icon = {"Low": "🟢", "Medium": "🟡", "High": "🟠", "Critical": "🔴"}
+    dep_map = {d["id"]: d for d in deps}
+
+    for item in analysis.get("dependencies", []):
+        dep_id = item.get("id")
+        original = dep_map.get(dep_id, {})
+        risk = item.get("risk_level", "Unknown")
+        label = (
+            f"{risk_icon.get(risk, '⚪')} Dep #{dep_id} — "
+            f"{original.get('dependent_team', '?')} ← {original.get('provider_team', '?')}: "
+            f"{original.get('deliverable', '?')}"
+        )
+        with st.expander(label, expanded=item.get("escalate", False)):
+            st.markdown(f"**Risk:** {risk}  |  **Status:** {original.get('status', '?')}  |  **Due:** {original.get('due_date', '?')}")
+            st.markdown(f"**Reasoning:** {item.get('reasoning', '—')}")
+            if item.get("escalate"):
+                st.error(f"🚨 Escalate — {item.get('recommended_action', '')}")
+            else:
+                st.markdown(f"**Action:** {item.get('recommended_action', '—')}")
+
+elif not deps:
+    st.info("Add at least one dependency above to get started.")

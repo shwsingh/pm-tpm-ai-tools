@@ -231,3 +231,34 @@ Lessons:
 - Asking Claude for pure JSON (no markdown, no explanation) works reliably; the code fence stripper handles the occasional ```json wrapper
 - Batch feedback analysis in one request is better than N per-item calls — Claude can surface cross-item themes it couldn't see in isolation
 - A sidebar API key input is the right UX for a learning project: it never blocks users without a key, and it's obvious where to enter it
+
+---
+
+## Day 10
+
+Status: COMPLETE
+
+Goal:
+Build a Dependency Agent that tracks cross-team launch dependencies and uses Claude to reason about the full dependency graph: critical path, cascading risks, and prioritized TPM actions.
+
+Built:
+- skills/dependency_agent.md — skill spec with reasoning pattern (parse → identify blockers → trace cascades → rank → act → summarize), evaluation rules, and MCP upgrade path
+- agents/dependency_agent.md — agent contract with full input/output JSON schema, planner pattern, and failure mode table
+- projects/tpm_pm_toolkit/app.py — Day 10 section:
+  - Structured form to add dependencies (dependent team, provider team, deliverable, due date, status)
+  - Session state dependency table with status icons
+  - analyze_dependencies() Claude call with batch dependency reasoning
+  - Results: health dashboard (overall health, critical path count, cascades, escalations), exec summary, cascading risk chain display, per-dependency expanders with risk level, reasoning, and recommended action
+- README badge 9/14 → 10/14; architecture diagram updated with Dependency Agent + DEPS store node
+
+Key design decisions:
+1. Structured form input (not free text) — produces reliable JSON for Claude; consistent schema means Claude can reason across deps, not just classify each one
+2. Batch analysis over the full graph — Claude sees all deps at once, enabling cascading risk detection that per-dep calls can't do
+3. Session state dependency list with Clear All — no DB needed; user builds up the graph interactively
+4. Escalate flag drives UI — red error box for escalations, plain text for actions, so critical items are visually impossible to miss
+5. Exec summary in the output — copy-paste ready for a status report; connects to Day 7 and Day 12 multi-agent
+
+Lessons:
+- Cascading risk detection requires seeing the full graph — this is the key reason to batch all deps into one Claude call, not N separate calls
+- Structured form input + JSON prompt = more reliable output than asking Claude to parse free-text dependency descriptions
+- The dependency graph naturally feeds the status report — Day 12 multi-agent will wire these together without changing either agent's contract

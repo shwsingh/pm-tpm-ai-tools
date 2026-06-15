@@ -7,7 +7,7 @@ A 14-day advanced vibe coding challenge to build an AI-powered TPM/Product Manag
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Streamlit](https://img.shields.io/badge/Built%20with-Streamlit-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
-[![Progress](https://img.shields.io/badge/Progress-9%2F14-brightgreen)](#progress)
+[![Progress](https://img.shields.io/badge/Progress-10%2F14-brightgreen)](#progress)
 [![Blog](https://img.shields.io/badge/Blog-shwsingh.github.io%2Fpm--tpm--ai--tools-1e3a8a)](https://shwsingh.github.io/pm-tpm-ai-tools/)
 
 📝 **Weekly blog:** [shwsingh.github.io/pm-tpm-ai-tools](https://shwsingh.github.io/pm-tpm-ai-tools/)
@@ -73,7 +73,7 @@ streamlit run projects/tpm_pm_toolkit/app.py
 | Day 7  | Status Report Skill     | ✅ Complete |
 | Day 8  | Knowledge Base / RAG    | ✅ Complete |
 | Day 9  | Feedback Agent          | ✅ Complete |
-| Day 10 | Dependency Agent        | ☐ Planned  |
+| Day 10 | Dependency Agent        | ✅ Complete |
 | Day 11 | Evaluation Framework    | ☐ Planned  |
 | Day 12 | Multi-Agent System      | ☐ Planned  |
 | Day 13 | TPM MCP Server          | ☐ Planned  |
@@ -94,9 +94,10 @@ timeline
     Day 7  : Status Report Skill - exec report generator with 5-dimension quality eval
     Day 8  : Knowledge Base - upload and keyword search over txt, md, docx, csv
     Day 9  : Feedback Agent + Claude-powered bug triage (first LLM calls)
+    Day 10 : Dependency Agent - critical path + cascading risk reasoning
 ```
 
-### Current architecture (Day 9)
+### Current architecture (Day 10)
 
 ```mermaid
 flowchart LR
@@ -108,6 +109,7 @@ flowchart LR
     SR["Status Report<br/>Day 7"]:::ui
     KB["Knowledge Base<br/>Day 8"]:::ui
     FA["Feedback Agent<br/>Day 9"]:::ui
+    DA["Dependency Agent<br/>Day 10"]:::ui
 
     PIPE["3-Stage Pipeline<br/>Ingest -- Triage -- Escalation"]:::agent
     BTA["triage_with_claude()"]:::agent
@@ -118,9 +120,11 @@ flowchart LR
     S_SR[/"skill: status_report"/]:::skill
     S_KB[/"skill: knowledge_base"/]:::skill
     S_FA[/"skill: feedback_agent"/]:::skill
+    S_DA[/"skill: dependency_agent"/]:::skill
 
     SS[("Session State")]:::store
     CHUNKS[("Doc Chunks<br/>txt / md / docx / csv")]:::store
+    DEPS[("Dependency Graph")]:::store
 
     User --> LRA
     User --> D5
@@ -128,6 +132,7 @@ flowchart LR
     User --> SR
     User --> KB
     User --> FA
+    User --> DA
 
     LRA --> S_LR
     D5 --> BTA
@@ -142,6 +147,9 @@ flowchart LR
     KB --> S_KB
     FA --> S_FA
     FA --> CLAUDE
+    DA --> DEPS
+    DA --> S_DA
+    DA --> CLAUDE
 
     classDef user fill:#1e293b,stroke:#60a5fa,color:#f8fafc,font-weight:bold
     classDef ui fill:#a16207,stroke:#fde68a,color:#fffbeb,font-weight:bold
@@ -169,7 +177,8 @@ pm-tpm-ai-tools/
 │   ├── bug_triage.md                     # Day 5
 │   ├── status_report.md                  # Day 7
 │   ├── knowledge_base.md                 # Day 8
-│   └── feedback_agent.md                 # Day 9
+│   ├── feedback_agent.md                 # Day 9
+│   └── dependency_agent.md               # Day 10
 │
 ├── agents/                               # Agent contracts
 │   ├── bug_triage_agent.md               # Day 5
@@ -227,6 +236,7 @@ Location: [`projects/tpm_pm_toolkit/app.py`](projects/tpm_pm_toolkit/app.py)
 | Day 7 | Status Report | Auto-populates from pipeline, 5-dimension quality eval, human confirm flow |
 | Day 8 | Knowledge Base | Upload `.txt`, `.md`, `.docx`, `.csv` and search by keyword |
 | Day 9 | Feedback Agent | Claude analyzes customer feedback: sentiment, themes, severity, TPM actions |
+| Day 10 | Dependency Agent | Add cross-team deps, Claude reasons critical path, cascades, and TPM actions |
 
 ## Tech Stack
 
