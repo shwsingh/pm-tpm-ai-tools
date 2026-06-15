@@ -232,3 +232,7 @@ Code, diagrams, and full per-day deltas are in the repo.
 ---
 
 *If you build agentic systems and have a pattern for confidence boundaries you like, I'd love to hear it. The whole point of building in public is to find the things you're getting wrong.*
+
+---
+
+**[→ Browse the full component reference](https://shwsingh.github.io/pm-tpm-ai-tools/components.html)** — every module in the architecture with role, impact, and a link to its source.
