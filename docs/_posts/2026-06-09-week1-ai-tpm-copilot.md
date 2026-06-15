@@ -17,6 +17,8 @@ header:
   actions:
     - label: "View on GitHub"
       url: "https://github.com/shwsingh/pm-tpm-ai-tools"
+    - label: "Component Reference"
+      url: "https://shwsingh.github.io/pm-tpm-ai-tools/components.html"
 toc: true
 toc_sticky: true
 toc_label: "On this page"
