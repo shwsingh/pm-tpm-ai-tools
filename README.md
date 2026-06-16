@@ -4,12 +4,12 @@
 
 A 14-day vibe coding challenge — from blank repo to multi-agent AI copilot for TPMs.
 
-[![Progress](https://img.shields.io/badge/Progress-14%2F14-22c55e)](#whats-built)
+[![Progress](https://img.shields.io/badge/Progress-14%2F14%20Complete-22c55e)](#capabilities)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![Streamlit](https://img.shields.io/badge/Built%20with-Streamlit-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-[Blog](https://shwsingh.github.io/pm-tpm-ai-tools/) · [Interactive Timeline](https://shwsingh.github.io/pm-tpm-ai-tools/timeline_gitbranch.html) · [Component Reference](https://shwsingh.github.io/pm-tpm-ai-tools/components.html)
+[Blog](https://shwsingh.github.io/pm-tpm-ai-tools/) · [Component Reference](https://shwsingh.github.io/pm-tpm-ai-tools/components.html) · [GitHub](https://github.com/shwsingh/pm-tpm-ai-tools)
 
 </div>
 
@@ -17,17 +17,29 @@ A 14-day vibe coding challenge — from blank repo to multi-agent AI copilot for
 
 ## What this is
 
-A Streamlit app that grows one capability per day — starting with keyword heuristics, graduating to Claude-powered agents, multi-agent orchestration, and (Day 13) a real MCP server wired to Claude Desktop. Each day is a working, committed, demo-able increment.
+A Streamlit app that ships one working TPM capability per day — starting with keyword heuristics, graduating to Claude-powered agents, multi-agent orchestration, and a real MCP server wired to Claude Desktop. Every day is a committed, demo-able increment.
 
 Built by **Shweta Singh** · Senior Manager, TPM · Google
 
 ---
 
-## What's built
+## Capabilities
 
-[![Build Map](docs/assets/images/build-map.png)](https://shwsingh.github.io/pm-tpm-ai-tools/timeline_card.html)
+[![Build Map](docs/assets/images/build-map.png)](https://shwsingh.github.io/pm-tpm-ai-tools/)
 
-→ **[Interactive timeline](https://shwsingh.github.io/pm-tpm-ai-tools/timeline_gitbranch.html)** · **[Git-log view](https://shwsingh.github.io/pm-tpm-ai-tools/timeline_gitbranch.html)** · **[Gantt](https://shwsingh.github.io/pm-tpm-ai-tools/timeline_gantt.html)**
+| Capability | What it does | AI concept |
+|-----------|-------------|------------|
+| **Launch Risk Analyzer** | Scores a launch across 5 risk dimensions, flags signals, gives GO/NO-GO | Heuristic → LLM |
+| **Bug Triage Agent** | Classifies severity (P0–P3), assigns owner, decides escalate vs. route-to-lead | Agent + output contract |
+| **3-Stage Pipeline** | Ingest → Triage → Escalation Handler, stage outputs feed next stage | Orchestration |
+| **Status Report Skill** | Structured input → exec report → 5-dimension quality eval | Skill spec + eval |
+| **Knowledge Base** | Upload `.txt` `.md` `.docx` `.csv`, keyword-chunked search | RAG foundation |
+| **Feedback Agent** | Per-item sentiment + themes + severity, aggregate TPM next steps | LLM + Claude |
+| **Dependency Agent** | Reasons over full dependency graph — critical path, cascading risks | LLM graph reasoning |
+| **AgentHarness + Evals** | Unified Claude calls with retry/logging; Claude-as-judge scores outputs | Infrastructure + eval |
+| **Multi-Agent Orchestrator** | Free-text request → agent loop → Claude picks tools → exec briefing | Multi-agent + tool use |
+| **MCP Server** | Resources, tools, and prompts exposed to Claude Desktop via MCP protocol | MCP |
+| **Executive TPM Copilot** | Live GitHub data + all agents → one exec briefing with velocity + status | Capstone |
 
 ---
 
@@ -40,14 +52,14 @@ source venv/bin/activate
 streamlit run projects/tpm_pm_toolkit/app.py
 ```
 
-> Requires `ANTHROPIC_API_KEY` set in your environment for Days 9–12 features.
+> Requires `ANTHROPIC_API_KEY` for Days 9–14 features.
 
 ---
 
 ## Architecture
 
 <details>
-<summary>Day 12 — component diagram</summary>
+<summary>Day 14 — full component diagram</summary>
 
 ```mermaid
 flowchart LR
@@ -62,16 +74,20 @@ flowchart LR
     DA["Dependency\nAgent"]:::ui
     EV["Eval\nFramework"]:::ui
     ORC["Orchestrator"]:::ui
+    MCP["MCP Server\n(Day 13)"]:::ui
 
     HARNESS["AgentHarness\nretry · tokens · logging"]:::agent
     LOOP["Agent Loop\ntool_use → execute → loop"]:::agent
 
     CLAUDE[("Claude API\nclaude-sonnet-4-6")]:::llm
+    GH[("GitHub API\nlive commits")]:::llm
 
-    User --> LRA & D5 & WF & SR & KB & FA & DA & EV & ORC
+    User --> LRA & D5 & WF & SR & KB & FA & DA & EV & ORC & MCP
     D5 & WF & FA & DA & EV --> HARNESS
     ORC --> LOOP --> HARNESS
     HARNESS --> CLAUDE
+    MCP --> CLAUDE
+    ORC --> GH
 
     classDef user  fill:#1e293b,stroke:#60a5fa,color:#f8fafc,font-weight:bold
     classDef ui    fill:#a16207,stroke:#fde68a,color:#fffbeb,font-weight:bold
@@ -79,20 +95,35 @@ flowchart LR
     classDef llm   fill:#7c3aed,stroke:#c4b5fd,color:#f5f3ff,font-weight:bold
 ```
 
-All Claude calls route through `AgentHarness`. The Day 12 orchestrator adds an agent loop on top.
-→ [Component reference](https://shwsingh.github.io/pm-tpm-ai-tools/components.html)
+→ [Full component reference](https://shwsingh.github.io/pm-tpm-ai-tools/components.html)
 
 </details>
 
 ---
 
-## Docs & links
+## Blog
+
+Three posts published — deep-dive series coming next:
+
+| Post | What it covers |
+|------|---------------|
+| [Week 1 — The contract before the code](https://shwsingh.github.io/pm-tpm-ai-tools/) | Days 0–5: why output contracts matter more than models |
+| [Week 2 — What AI made me honest about](https://shwsingh.github.io/pm-tpm-ai-tools/) | Days 6–12: skills, agents, evals, and what I'd been doing on autopilot |
+| [Challenge complete — 14 days, 14 capabilities](https://shwsingh.github.io/pm-tpm-ai-tools/) | Full retrospective: what shipped, what surprised me, what's next |
+
+**Coming next** — a deep-dive series on each capability:
+- How the output contract made the LLM swap on Day 9 a one-line change
+- Why I built the eval framework on Day 11, not Day 1 — and what it cost me
+- MCP from scratch: Resources vs. Tools vs. Prompts, and when each one matters
+- The multi-agent orchestrator: what changed when Claude started calling the tools
+
+---
+
+## Docs
 
 | Resource | Link |
 |----------|------|
-| Weekly blog | [shwsingh.github.io/pm-tpm-ai-tools](https://shwsingh.github.io/pm-tpm-ai-tools/) |
-| Interactive timeline | [timeline_gitbranch.html](https://shwsingh.github.io/pm-tpm-ai-tools/timeline_gitbranch.html) |
-| Component reference | [components.html](https://shwsingh.github.io/pm-tpm-ai-tools/components.html) |
 | 14-day plan | [`challenge/14_day_plan.md`](challenge/14_day_plan.md) |
 | Progress tracker | [`challenge/progress_tracker.md`](challenge/progress_tracker.md) |
+| Design decisions | [`design_decisions/`](design_decisions/) |
 | Lessons learned | [`lessons_learned/`](lessons_learned/) |
