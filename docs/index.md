@@ -6,8 +6,8 @@ entries_layout: list
 classes: wide
 ---
 
-Building an AI assistant for TPMs in 14 days, in public.
+**14 / 14 — Challenge complete.**
 
-This site is the weekly notebook: what I shipped, what I got wrong, and what I learned about building agentic systems.
+From blank repo to multi-agent AI copilot in 14 days — skills, agents, RAG, evals, multi-agent orchestration, and a real MCP server wired to Claude Desktop.
 
-Source, diagrams, and per-day design decisions live in the [repo](https://github.com/shwsingh/pm-tpm-ai-tools).
+→ [Interactive timeline](https://shwsingh.github.io/pm-tpm-ai-tools/timeline_gitbranch.html) · [Component reference](https://shwsingh.github.io/pm-tpm-ai-tools/components.html) · [GitHub](https://github.com/shwsingh/pm-tpm-ai-tools)
