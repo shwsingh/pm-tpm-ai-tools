@@ -4,7 +4,7 @@
 
 A 14-day vibe coding challenge — from blank repo to multi-agent AI copilot for TPMs.
 
-[![Progress](https://img.shields.io/badge/Progress-12%2F14-22c55e)](#whats-built)
+[![Progress](https://img.shields.io/badge/Progress-13%2F14-22c55e)](#whats-built)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![Streamlit](https://img.shields.io/badge/Built%20with-Streamlit-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)

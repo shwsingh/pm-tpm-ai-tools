@@ -1967,3 +1967,111 @@ else:
             f"🔢 Total: in {loop['total_input_tokens']} + out {loop['total_output_tokens']} "
             f"= **{loop['total_tokens']} tokens** across {len(iterations)} iteration(s)"
         )
+
+# ── Day 13: MCP Server ───────────────────────────────────────────────────────
+
+with st.expander("🔌 Day 13 — MCP Server Integration", expanded=False):
+    st.markdown("""
+**What's new:** A real [Model Context Protocol](https://modelcontextprotocol.io) server that exposes
+TPM resources, tools, and prompts directly to Claude Desktop (or any MCP client).
+""")
+
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Resources", "3", "launch checklist · risk register · capacity plan")
+    c2.metric("Tools", "3", "analyze risk · status report · escalation")
+    c3.metric("Prompts", "2", "launch review · weekly exec update")
+
+    st.divider()
+
+    # Connection status
+    server_path = os.path.join(
+        os.path.dirname(__file__),
+        "../../mcp_servers/tpm_copilot_mcp/server.py"
+    )
+    server_exists = os.path.exists(os.path.normpath(server_path))
+
+    if server_exists:
+        st.success("✅ MCP server found at `mcp_servers/tpm_copilot_mcp/server.py`")
+    else:
+        st.error("❌ MCP server not found")
+
+    st.subheader("Test Tools Locally")
+
+    tab1, tab2, tab3 = st.tabs(["analyze_launch_risk", "generate_status_report", "create_escalation"])
+
+    with tab1:
+        st.caption("Score any launch for risk across 5 dimensions.")
+        lr_feature  = st.text_input("Feature name", value="User Auth Migration", key="mcp_lr_feature")
+        lr_desc     = st.text_area("Description", value="Migrate all users from legacy auth to OAuth 2.0. Affects production database.", height=80, key="mcp_lr_desc")
+        lr_date     = st.text_input("Launch date", value="2026-07-01", key="mcp_lr_date")
+        lr_deps     = st.text_input("Dependencies (comma-separated)", value="Auth Team, DB Team, Security", key="mcp_lr_deps")
+        lr_risks    = st.text_input("Known risks", value="Session invalidation for active users", key="mcp_lr_risks")
+
+        if st.button("Analyze Risk", key="mcp_lr_run"):
+            import sys
+            sys.path.insert(0, os.path.normpath(os.path.join(os.path.dirname(__file__), "../../")))
+            from mcp_servers.tpm_copilot_mcp.server import analyze_launch_risk
+            result = json.loads(analyze_launch_risk(lr_feature, lr_desc, lr_date, lr_deps, lr_risks))
+            level = result["overall_risk"]
+            color = {"HIGH": "🔴", "MEDIUM": "🟡", "LOW": "🟢"}.get(level, "⚪")
+            st.markdown(f"### {color} {level} RISK — Score {result['score']}/5")
+            st.markdown(f"> {result['recommendation']}")
+            dc1, dc2, dc3, dc4, dc5 = st.columns(5)
+            dims = result["dimensions"]
+            dc1.metric("Tech", dims["technical_complexity"])
+            dc2.metric("Deps", dims["dependency_count"])
+            dc3.metric("Timeline", dims["timeline_pressure"])
+            dc4.metric("Rollback", dims["rollback_complexity"])
+            dc5.metric("User Impact", dims["user_impact"])
+            if result["risk_signals"]:
+                st.caption(f"Risk signals: {', '.join(result['risk_signals'])}")
+
+    with tab2:
+        st.caption("Draft an exec-ready status report from bullet inputs.")
+        sr_project = st.text_input("Project name", value="AI TPM Copilot", key="mcp_sr_proj")
+        sr_color   = st.selectbox("Status", ["GREEN", "YELLOW", "RED"], key="mcp_sr_color")
+        sr_acc     = st.text_area("This week's accomplishments (one per line)",
+                                   value="Shipped MCP server with 3 tools\nWired to Claude Desktop\nPublished Week 2 blog post",
+                                   height=90, key="mcp_sr_acc")
+        sr_next    = st.text_area("Next week's priorities (one per line)",
+                                   value="Day 14 full demo\nEnd-to-end exec briefing\nLinkedIn post",
+                                   height=90, key="mcp_sr_next")
+        sr_blockers = st.text_input("Blockers (optional)", key="mcp_sr_block")
+
+        if st.button("Generate Report", key="mcp_sr_run"):
+            from mcp_servers.tpm_copilot_mcp.server import generate_status_report
+            report = generate_status_report(sr_project, sr_color, sr_acc, sr_next, sr_blockers)
+            st.markdown(report)
+
+    with tab3:
+        st.caption("Create a structured escalation document.")
+        esc_title   = st.text_input("Incident title", value="Auth service latency spike — p99 > 5s", key="mcp_esc_title")
+        esc_sev     = st.selectbox("Severity", ["SEV1", "SEV2", "SEV3"], key="mcp_esc_sev")
+        esc_impact  = st.text_area("Impact", value="15% of login attempts failing. ~2,000 users affected. No revenue impact yet.", height=70, key="mcp_esc_impact")
+        esc_tl      = st.text_area("Timeline", value="10:32 — spike detected\n10:45 — on-call paged\n11:00 — root cause: DB connection pool exhausted", height=70, key="mcp_esc_tl")
+        esc_owner   = st.text_input("Owner", value="Jane (on-call), Auth Team", key="mcp_esc_owner")
+        esc_ask     = st.text_input("Ask", value="Approve DB connection pool increase to 200 (currently 50)", key="mcp_esc_ask")
+
+        if st.button("Create Escalation", key="mcp_esc_run"):
+            from mcp_servers.tpm_copilot_mcp.server import create_escalation
+            doc = create_escalation(esc_title, esc_sev, esc_impact, esc_tl, esc_owner, esc_ask)
+            st.markdown(doc)
+
+    st.divider()
+    st.subheader("Connect to Claude Desktop")
+    st.markdown("Add this to your Claude Desktop `claude_desktop_config.json`:")
+
+    python_path = os.path.normpath(os.path.join(os.path.dirname(__file__), "../../venv/bin/python"))
+    server_abs  = os.path.normpath(os.path.join(os.path.dirname(__file__), "../../mcp_servers/tpm_copilot_mcp/server.py"))
+
+    config_json = json.dumps({
+        "mcpServers": {
+            "tpm-copilot": {
+                "command": python_path,
+                "args": [server_abs]
+            }
+        }
+    }, indent=2)
+
+    st.code(config_json, language="json")
+    st.caption("Config file location: `~/Library/Application Support/Claude/claude_desktop_config.json`")

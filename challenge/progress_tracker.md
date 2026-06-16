@@ -295,6 +295,37 @@ Lessons:
 
 ---
 
+## Day 13
+
+Status: COMPLETE
+
+Goal:
+Build a real MCP server exposing TPM resources, tools, and prompts to Claude Desktop via the Model Context Protocol.
+
+Built:
+- `mcp_servers/tpm_copilot_mcp/server.py` — FastMCP server with 3 resources, 3 tools, 2 prompts
+- Resources: `tpm://launch-checklist`, `tpm://risk-register`, `tpm://capacity-plan` (read from live .md files)
+- Tools: `analyze_launch_risk` (5-dimension heuristic scorer), `generate_status_report` (markdown report generator), `create_escalation` (structured escalation doc)
+- Prompts: `launch_readiness_review`, `weekly_exec_update` (inject live resource content at call time)
+- Data files: `launch_checklist.md`, `risk_register.md`, `capacity_plan.md` — realistic TPM content
+- Day 13 section in app.py: connection status, local tool test panel (3 tabs), Claude Desktop config generator
+- `design_decisions/day13_mcp_server.md`
+
+Key design decisions:
+1. Real FastMCP server over mock stubs — actual MCP protocol, connectable to Claude Desktop
+2. FastMCP decorator pattern over low-level SDK — resources/tools/prompts in ~10 lines each
+3. Heuristic tools inside MCP, not LLM calls — MCP tools are called *by* Claude, so Claude-inside-tools creates useless recursion
+4. Data files as MCP Resources — live files mean content updates without server restart
+5. Prompts inject resource content at call time — Claude Desktop gets grounded context immediately, not just a pointer
+
+Lessons:
+- FastMCP makes the real MCP protocol almost as easy as writing a Flask route — the decorator abstraction is well-designed
+- MCP Resources are for live data; MCP Tools are for actions; MCP Prompts prime the conversation — distinct roles, not interchangeable
+- Tools called by Claude should return structured data, not call Claude themselves — the LLM layer belongs above the tool layer
+- The Claude Desktop config generator in the UI is the most practical artifact: users can copy-paste it and connect immediately
+
+---
+
 ## Day 12
 
 Status: COMPLETE
