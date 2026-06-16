@@ -25,25 +25,9 @@ Built by **Shweta Singh** · Senior Manager, TPM · Google
 
 ## What's built
 
-| Day | Capability | Tag |
-|-----|-----------|-----|
-| 0 | Repo + 14-day plan | Setup |
-| 1 | TPM Dashboard | UI |
-| 2 | Launch Risk Analyzer | Heuristic |
-| 3 | First Skill Spec | Skill |
-| 4 | PRD Builder | Skill |
-| 5 | Bug Triage Agent + Blog | Agent |
-| 6 | 3-Stage Pipeline | Orchestration |
-| 7 | Status Report Skill | Skill |
-| 8 | Knowledge Base | RAG |
-| 9 | Feedback Agent + First Claude Calls | LLM |
-| 10 | Dependency Agent | LLM |
-| 11 | AgentHarness + Eval Framework | Infrastructure |
-| 12 | Multi-Agent Orchestrator | Multi-Agent |
-| 13 | MCP Server Integration | *coming* |
-| 14 | Executive TPM Copilot | *coming* |
+[![Build Map](docs/assets/images/build-map.png)](https://shwsingh.github.io/pm-tpm-ai-tools/timeline_card.html)
 
-→ **[View interactive timeline](https://shwsingh.github.io/pm-tpm-ai-tools/timeline_gitbranch.html)**
+→ **[Interactive timeline](https://shwsingh.github.io/pm-tpm-ai-tools/timeline_gitbranch.html)** · **[Git-log view](https://shwsingh.github.io/pm-tpm-ai-tools/timeline_gitbranch.html)** · **[Gantt](https://shwsingh.github.io/pm-tpm-ai-tools/timeline_gantt.html)**
 
 ---
 
