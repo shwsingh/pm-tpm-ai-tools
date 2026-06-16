@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI TPM Copilot — Gantt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: "Inter", sans-serif;
+  background: #0a0a0f;
+  display: flex; align-items: center; justify-content: center;
+  min-height: 100vh; padding: 32px;
+  -webkit-font-smoothing: antialiased;
+}
+
+:root {
+  --blue:   #3b82f6;
+  --amber:  #f59e0b;
+  --green:  #22c55e;
+  --purple: #a855f7;
+  --bg:     #0e0e17;
+  --border: #1e1e2e;
+  --text1:  #fafafa;
+  --text2:  #a1a1aa;
+  --text3:  #52525b;
+
+  /* Layout */
+  --label-w: 210px;
+  --col: 44px;   /* width per day column */
+  --row-h: 34px;
+  --group-h: 26px;
+}
+
+.card {
+  width: 900px;
+  background: linear-gradient(145deg, #111118, #0d0d14);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
+}
+
+/* ── HEADER ── */
+.header {
+  padding: 22px 28px 18px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(59,130,246,0.04) 0%, transparent 100%);
+  display: flex; align-items: flex-end; justify-content: space-between; gap: 16px;
+}
+.h-left {}
+.eyebrow {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--blue); margin-bottom: 4px;
+}
+.h-title {
+  font-size: 20px; font-weight: 900; letter-spacing: -0.03em; color: var(--text1);
+}
+.h-right { display: flex; align-items: center; gap: 20px; }
+.legend-item {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 10px; font-weight: 600; color: var(--text3);
+  letter-spacing: 0.04em; text-transform: uppercase;
+}
+.ld { width: 10px; height: 10px; border-radius: 3px; }
+
+/* ── GANTT BODY ── */
+.gantt-wrap {
+  overflow: hidden;
+}
+
+/* Day axis header */
+.axis-row {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  background: #0c0c15;
+}
+.axis-label-spacer {
+  width: var(--label-w);
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+  padding: 8px 12px;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--text3);
+  display: flex; align-items: center;
+}
+.axis-days { display: flex; flex: 1; }
+.axis-day {
+  width: var(--col); flex-shrink: 0;
+  text-align: center;
+  padding: 8px 0;
+  font-size: 9px; font-weight: 700; letter-spacing: 0.04em;
+  color: var(--text3); border-right: 1px solid rgba(255,255,255,0.03);
+  position: relative;
+}
+.axis-day.done { color: var(--text3); }
+.axis-day.coming { color: #1e1e2e; }
+.axis-day.today-marker::after {
+  content: "NOW";
+  position: absolute; bottom: -1px; left: 50%; transform: translateX(-50%);
+  font-size: 7px; font-weight: 800; color: var(--green); letter-spacing: 0.1em;
+}
+
+/* Phase group header */
+.group-row {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+.group-label {
+  width: var(--label-w);
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+  padding: 6px 12px 6px 18px;
+  font-size: 10px; font-weight: 800; letter-spacing: 0.08em;
+  text-transform: uppercase;
+  display: flex; align-items: center; gap: 8px;
+  position: relative;
+}
+.group-label::before {
+  content: "";
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px;
+}
+.group-row.blue  .group-label::before { background: var(--blue); }
+.group-row.amber .group-label::before { background: var(--amber); }
+.group-row.green .group-label::before { background: var(--green); }
+.group-row.purple .group-label::before { background: var(--purple); }
+.group-row.blue  .group-label { color: #93c5fd; }
+.group-row.amber .group-label { color: #fcd34d; }
+.group-row.green .group-label { color: #86efac; }
+.group-row.purple .group-label { color: #d8b4fe; }
+
+.group-bar-area {
+  flex: 1; display: flex; align-items: center;
+  padding: 0; position: relative;
+}
+/* Phase span bar */
+.phase-span {
+  position: absolute; height: 3px; border-radius: 99px;
+  top: 50%; transform: translateY(-50%);
+}
+.group-row.blue   .phase-span { background: rgba(59,130,246,0.2); }
+.group-row.amber  .phase-span { background: rgba(245,158,11,0.2); }
+.group-row.green  .phase-span { background: rgba(34,197,94,0.2); }
+.group-row.purple .phase-span { background: rgba(168,85,247,0.2); }
+/* Grid lines inside phase span area */
+.grid-col-line {
+  position: absolute; top: 0; bottom: 0; width: 1px;
+  background: rgba(255,255,255,0.03);
+}
+
+/* Task row */
+.task-row {
+  display: flex;
+  border-bottom: 1px solid rgba(255,255,255,0.025);
+  height: var(--row-h);
+  position: relative;
+  transition: background 0.1s;
+}
+.task-row:hover { background: rgba(255,255,255,0.012); }
+
+.task-label {
+  width: var(--label-w); flex-shrink: 0;
+  border-right: 1px solid var(--border);
+  padding: 0 12px 0 20px;
+  display: flex; align-items: center; gap: 0;
+  font-size: 11px; font-weight: 500; color: var(--text2);
+  letter-spacing: -0.01em; white-space: nowrap; overflow: hidden;
+  text-overflow: ellipsis;
+}
+.task-label.coming { color: var(--text3); }
+.task-label .day-badge {
+  font-size: 9px; font-weight: 700; color: var(--text3);
+  margin-right: 8px; min-width: 22px; letter-spacing: 0.02em;
+}
+.task-bar-area {
+  flex: 1; position: relative; display: flex; align-items: center;
+}
+/* Vertical grid lines */
+.task-bar-area .vline {
+  position: absolute; top: 0; bottom: 0; width: 1px;
+  background: rgba(255,255,255,0.03);
+}
+
+/* The actual bar */
+.bar {
+  position: absolute;
+  height: 20px; border-radius: 5px;
+  display: flex; align-items: center; padding: 0 8px;
+  font-size: 9px; font-weight: 700; letter-spacing: 0.04em;
+  text-transform: uppercase; white-space: nowrap; overflow: hidden;
+}
+.bar.blue   { background: rgba(59,130,246,0.25);  border: 1px solid rgba(59,130,246,0.4);  color: #93c5fd; }
+.bar.amber  { background: rgba(245,158,11,0.25);  border: 1px solid rgba(245,158,11,0.4);  color: #fcd34d; }
+.bar.green  { background: rgba(34,197,94,0.25);   border: 1px solid rgba(34,197,94,0.4);   color: #86efac; }
+.bar.purple { background: rgba(168,85,247,0.25);  border: 1px solid rgba(168,85,247,0.4);  color: #d8b4fe; }
+.bar.coming {
+  background: transparent; border: 1px dashed #2a2a3a;
+  color: #2a2a3a; opacity: 0.6;
+}
+
+/* Progress line */
+.progress-line {
+  position: absolute; top: 0; bottom: 0; width: 2px;
+  background: rgba(34,197,94,0.6);
+  z-index: 10;
+}
+.progress-line::before {
+  content: "TODAY";
+  position: absolute; top: 4px; left: 4px;
+  font-size: 7px; font-weight: 800; color: #22c55e;
+  letter-spacing: 0.1em; white-space: nowrap;
+}
+
+/* ── FOOTER ── */
+.footer {
+  padding: 12px 28px;
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(255,255,255,0.01);
+}
+.footer p { font-size: 10px; color: var(--text3); }
+.footer strong { color: #52525b; }
+.footer-links { display: flex; gap: 14px; }
+.footer-links a {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.06em;
+  color: var(--text3); text-decoration: none; text-transform: uppercase;
+}
+.footer-links a:hover { color: var(--text2); }
+</style>
+</head>
+<body>
+<div class="card">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="h-left">
+      <p class="eyebrow">14-Day Vibe Coding Challenge · June 2026</p>
+      <h1 class="h-title">AI TPM Copilot — Build Gantt</h1>
+    </div>
+    <div class="h-right">
+      <div class="legend-item"><div class="ld" style="background:rgba(59,130,246,0.4)"></div>Foundation</div>
+      <div class="legend-item"><div class="ld" style="background:rgba(245,158,11,0.4)"></div>Skills & Agents</div>
+      <div class="legend-item"><div class="ld" style="background:rgba(34,197,94,0.4)"></div>LLM & Orch.</div>
+      <div class="legend-item"><div class="ld" style="background:rgba(168,85,247,0.4)"></div>Infra</div>
+      <div class="legend-item"><div class="ld" style="background:transparent;border:1px dashed #2a2a3a"></div>Upcoming</div>
+    </div>
+  </div>
+
+  <!-- GANTT -->
+  <div class="gantt-wrap" id="gantt"></div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <p>Built by <strong>Shweta Singh</strong> · Senior Manager, TPM · Google &nbsp;·&nbsp; 12/14 days complete</p>
+    <div class="footer-links">
+      <a href="https://shwsingh.github.io/pm-tpm-ai-tools/">Blog</a>
+      <a href="https://github.com/shwsingh/pm-tpm-ai-tools">GitHub</a>
+    </div>
+  </div>
+</div>
+
+<script>
+const COL = 44;        // px per day column
+const LABEL_W = 210;  // px label column
+const TOTAL_DAYS = 15; // 0–14
+const DONE_DAYS = 13;  // days 0–12 complete (index 0-12 = 13 days)
+
+const phases = [
+  {
+    id: "blue", name: "Phase 1 — Foundation", span: [0, 4],
+    tasks: [
+      { day: 0, label: "Repo + 14-Day Plan",        tag: "Setup",       done: true },
+      { day: 1, label: "TPM Dashboard Homepage",    tag: "UI",          done: true },
+      { day: 2, label: "Launch Risk Analyzer",      tag: "Heuristic",   done: true },
+      { day: 3, label: "First Skill Spec",          tag: "Skill",       done: true },
+      { day: 4, label: "PRD Builder Skill",         tag: "Skill",       done: true },
+    ]
+  },
+  {
+    id: "amber", name: "Phase 2 — Skills & Agents", span: [5, 8],
+    tasks: [
+      { day: 5, label: "Bug Triage Agent + Blog",   tag: "Agent",       done: true },
+      { day: 6, label: "3-Stage Pipeline",           tag: "Orch.",       done: true },
+      { day: 7, label: "Status Report Skill",        tag: "Skill",       done: true },
+      { day: 8, label: "Knowledge Base",             tag: "RAG",         done: true },
+    ]
+  },
+  {
+    id: "green", name: "Phase 3 — LLM & Orchestration", span: [9, 12],
+    tasks: [
+      { day: 9,  label: "Feedback Agent + Claude",  tag: "LLM",         done: true },
+      { day: 10, label: "Dependency Agent",          tag: "LLM",         done: true },
+      { day: 11, label: "AgentHarness + Eval",       tag: "Infra",       done: true },
+      { day: 12, label: "Multi-Agent Orchestrator",  tag: "Multi-Agent", done: true },
+    ]
+  },
+  {
+    id: "purple", name: "Infrastructure & Docs", span: [5, 12],
+    tasks: [
+      { day: 5, endDay: 12, label: "Git Hooks + Blog + Component Ref + Timeline", tag: "Ongoing", done: true },
+    ]
+  },
+  {
+    id: "blue", name: "Coming Up", span: [13, 14],
+    tasks: [
+      { day: 13, label: "MCP Server Integration",   tag: "MCP",         done: false },
+      { day: 14, label: "Executive TPM Copilot",    tag: "Full Demo",   done: false },
+    ]
+  }
+];
+
+function px(day) { return day * COL; }
+
+function renderVLines(n) {
+  let html = "";
+  for (let d = 0; d < n; d++) {
+    html += `<div class="vline" style="left:${px(d)}px"></div>`;
+  }
+  return html;
+}
+
+const gantt = document.getElementById("gantt");
+const totalWidth = TOTAL_DAYS * COL;
+
+// ── Axis row ──
+let axisHtml = `<div class="axis-row">
+  <div class="axis-label-spacer">Task</div>
+  <div class="axis-days">`;
+for (let d = 0; d < TOTAL_DAYS; d++) {
+  const isDone = d < DONE_DAYS;
+  const isToday = d === DONE_DAYS - 1;
+  axisHtml += `<div class="axis-day ${isDone ? "done" : "coming"} ${isToday ? "today-marker" : ""}">${String(d).padStart(2,"0")}</div>`;
+}
+axisHtml += `</div></div>`;
+gantt.innerHTML += axisHtml;
+
+// ── Phases ──
+phases.forEach(phase => {
+  // Group header row
+  const spanLeft = px(phase.span[0]);
+  const spanWidth = px(phase.span[1] - phase.span[0] + 1);
+  gantt.innerHTML += `
+    <div class="group-row ${phase.id}">
+      <div class="group-label">${phase.name}</div>
+      <div class="group-bar-area" style="position:relative">
+        <div class="phase-span" style="left:${spanLeft}px;width:${spanWidth}px"></div>
+        ${renderVLines(TOTAL_DAYS)}
+      </div>
+    </div>`;
+
+  // Task rows
+  phase.tasks.forEach(task => {
+    const startDay = task.day;
+    const endDay = task.endDay !== undefined ? task.endDay : task.day;
+    const barLeft = px(startDay);
+    const barWidth = px(endDay - startDay + 1) - 4;
+    const barClass = task.done ? phase.id : "coming";
+
+    gantt.innerHTML += `
+      <div class="task-row">
+        <div class="task-label ${task.done ? "" : "coming"}">
+          <span class="day-badge">${String(task.day).padStart(2,"0")}</span>
+          ${task.label}
+        </div>
+        <div class="task-bar-area" style="position:relative">
+          ${renderVLines(TOTAL_DAYS)}
+          <div class="bar ${barClass}" style="left:${barLeft + 2}px;width:${barWidth}px">
+            ${task.tag}
+          </div>
+        </div>
+      </div>`;
+  });
+});
+
+// Draw progress line over the whole gantt
+// Left offset = LABEL_W + (DONE_DAYS * COL) but it's in the bar-area so just DONE_DAYS * COL
+// We inject it via absolute overlay on the gantt-wrap
+const progressLeft = LABEL_W + (DONE_DAYS * COL) - 1;
+gantt.style.position = "relative";
+gantt.innerHTML += `<div class="progress-line" style="left:${progressLeft}px;top:0;bottom:0;position:absolute"></div>`;
+</script>
+</body>
+</html>

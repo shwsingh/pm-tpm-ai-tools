@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI TPM Copilot — Roadmap Strip</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #09090b;
+  --surface: #111118;
+  --border: #1e1e2e;
+  --blue: #3b82f6;
+  --amber: #f59e0b;
+  --green: #22c55e;
+  --purple: #a855f7;
+  --muted: #52525b;
+  --text: #e4e4e7;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  background: var(--bg);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap {
+  width: 100%;
+  max-width: 1100px;
+}
+
+/* Header */
+.hdr {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 32px;
+}
+.hdr-left .eyebrow {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--blue); margin-bottom: 6px;
+}
+.hdr-left h1 {
+  font-size: 22px; font-weight: 900; letter-spacing: -0.04em; color: var(--text);
+}
+.hdr-left p { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+.hdr-right {
+  display: flex; align-items: center; gap: 16px;
+}
+.legend-item {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 10px; font-weight: 600; color: var(--muted); letter-spacing: 0.04em;
+}
+.legend-dot { width: 7px; height: 7px; border-radius: 50%; }
+
+/* Roadmap container */
+.roadmap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 32px 36px 28px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Phase lanes */
+.phase-lanes {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.phase-row {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  align-items: stretch;
+  position: relative;
+  min-height: 72px;
+  border-bottom: 1px solid var(--border);
+  padding: 14px 0;
+}
+.phase-row:last-child { border-bottom: none; }
+
+.phase-label {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-right: 20px;
+  border-right: 1px solid var(--border);
+}
+.phase-label .ph-num {
+  font-size: 9px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; margin-bottom: 2px;
+}
+.phase-label .ph-name {
+  font-size: 11px; font-weight: 700; color: var(--text); line-height: 1.3;
+}
+.phase-label .ph-range {
+  font-size: 10px; color: var(--muted); margin-top: 2px;
+}
+
+/* Day nodes strip */
+.day-strip {
+  display: flex;
+  align-items: center;
+  padding-left: 20px;
+  gap: 8px;
+  flex-wrap: nowrap;
+  position: relative;
+}
+
+/* Connector line */
+.day-strip::before {
+  content: "";
+  position: absolute;
+  left: 28px; right: 0;
+  top: 50%; transform: translateY(-50%);
+  height: 1px;
+  background: var(--border);
+  z-index: 0;
+}
+
+.day-node {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  cursor: default;
+  flex-shrink: 0;
+}
+
+.node-dot {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 800; letter-spacing: 0.03em;
+  border: 1px solid transparent;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  position: relative;
+}
+.node-dot:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+}
+
+.node-dot.done-blue   { background: rgba(59,130,246,0.18); color: #93c5fd; border-color: rgba(59,130,246,0.3); }
+.node-dot.done-amber  { background: rgba(245,158,11,0.18); color: #fcd34d; border-color: rgba(245,158,11,0.3); }
+.node-dot.done-green  { background: rgba(34,197,94,0.18);  color: #86efac; border-color: rgba(34,197,94,0.3); }
+.node-dot.done-purple { background: rgba(168,85,247,0.18); color: #d8b4fe; border-color: rgba(168,85,247,0.3); }
+.node-dot.soon        { background: transparent; color: #27272a; border: 1px dashed #2a2a3a; }
+
+.node-dot .check {
+  position: absolute; top: -4px; right: -4px;
+  width: 12px; height: 12px; border-radius: 50%;
+  background: #22c55e; font-size: 7px; color: #000;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 900;
+}
+
+.node-label {
+  font-size: 9px; font-weight: 500; color: var(--muted);
+  text-align: center; max-width: 52px; line-height: 1.3;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.day-node:hover .node-label { color: var(--text); }
+
+/* Tooltip */
+.day-node .tooltip {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%; transform: translateX(-50%);
+  background: #18181b;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  width: 160px;
+  z-index: 99;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.1s ease;
+  white-space: normal;
+}
+.day-node:hover .tooltip { opacity: 1; }
+.tooltip .tt-day { font-size: 9px; font-weight: 700; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 3px; text-transform: uppercase; }
+.tooltip .tt-title { font-size: 11px; font-weight: 700; color: var(--text); line-height: 1.35; margin-bottom: 4px; }
+.tooltip .tt-tag { font-size: 9px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 1px 6px; border-radius: 99px; }
+.tooltip.blue  .tt-tag { background: rgba(59,130,246,0.15); color: #93c5fd; }
+.tooltip.amber .tt-tag { background: rgba(245,158,11,0.15); color: #fcd34d; }
+.tooltip.green .tt-tag { background: rgba(34,197,94,0.15);  color: #86efac; }
+.tooltip.purple .tt-tag { background: rgba(168,85,247,0.15); color: #d8b4fe; }
+
+/* Progress bar at bottom */
+.progress-row {
+  margin-top: 24px;
+  display: flex; align-items: center; gap: 12px;
+}
+.prog-label { font-size: 11px; font-weight: 700; color: var(--muted); flex-shrink: 0; }
+.prog-track {
+  flex: 1; height: 3px; background: var(--border); border-radius: 99px; overflow: hidden;
+}
+.prog-fill {
+  height: 100%; width: 85.7%;
+  background: linear-gradient(90deg, var(--blue), var(--amber), var(--green));
+  border-radius: 99px;
+}
+.prog-pct { font-size: 11px; font-weight: 800; color: var(--text); flex-shrink: 0; }
+
+/* Footer */
+.footer {
+  margin-top: 20px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.footer-by { font-size: 11px; color: #3f3f46; }
+.footer-by strong { color: var(--muted); }
+.footer-links { display: flex; gap: 14px; }
+.footer-links a {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+  color: #3f3f46; text-decoration: none; transition: color 0.1s;
+}
+.footer-links a:hover { color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hdr">
+    <div class="hdr-left">
+      <p class="eyebrow">14-Day Vibe Coding Challenge · June 2026</p>
+      <h1>AI TPM Copilot — Roadmap</h1>
+      <p>Horizontal phase-lane view · 12 of 14 days complete</p>
+    </div>
+    <div class="hdr-right">
+      <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div>Foundation</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div>Skills & Agents</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div>LLM & Orchestration</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#a855f7"></div>Infra & Docs</div>
+    </div>
+  </div>
+
+  <div class="roadmap">
+    <div class="phase-lanes">
+
+      <!-- Phase 1 -->
+      <div class="phase-row">
+        <div class="phase-label">
+          <span class="ph-num" style="color:#3b82f6">Phase 01</span>
+          <span class="ph-name">Foundation</span>
+          <span class="ph-range">Days 0–4</span>
+        </div>
+        <div class="day-strip">
+          <div class="day-node">
+            <div class="node-dot done-blue">00<div class="check">✓</div></div>
+            <span class="node-label">Repo + Plan</span>
+            <div class="tooltip blue"><div class="tt-day">Day 00</div><div class="tt-title">Repo + 14-Day Plan</div><span class="tt-tag">Setup</span></div>
+          </div>
+          <div class="day-node">
+            <div class="node-dot done-blue">01<div class="check">✓</div></div>
+            <span class="node-label">Dashboard</span>
+            <div class="tooltip blue"><div class="tt-day">Day 01</div><div class="tt-title">TPM Dashboard Homepage</div><span class="tt-tag">UI</span></div>
+          </div>
+          <div class="day-node">
+            <div class="node-dot done-blue">02<div class="check">✓</div></div>
+            <span class="node-label">Risk Analyzer</span>
+            <div class="tooltip blue"><div class="tt-day">Day 02</div><div class="tt-title">Launch Risk Analyzer</div><span class="tt-tag">Heuristic</span></div>
+          </div>
+          <div class="day-node">
+            <div class="node-dot done-blue">03<div class="check">✓</div></div>
+            <span class="node-label">First Skill Spec</span>
+            <div class="tooltip blue"><div class="tt-day">Day 03</div><div class="tt-title">First Skill Spec</div><span class="tt-tag">Skill</span></div>
+          </div>
+          <div class="day-node">
+            <div class="node-dot done-blue">04<div class="check">✓</div></div>
+            <span class="node-label">PRD Builder</span>
+            <div class="tooltip blue"><div class="tt-day">Day 04</div><div class="tt-title">PRD Builder Skill</div><span class="tt-tag">Skill</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 2 -->
+      <div class="phase-row">
+        <div class="phase-label">
+          <span class="ph-num" style="color:#f59e0b">Phase 02</span>
+          <span class="ph-name">Skills & Agents</span>
+          <span class="ph-range">Days 5–8</span>
+        </div>
+        <div class="day-strip">
+          <div class="day-node">
+            <div class="node-dot done-amber">05<div class="check">✓</div></div>
+            <span class="node-label">Bug Triage + Blog</span>
+            <div class="tooltip amber"><div class="tt-day">Day 05</div><div class="tt-title">Bug Triage Agent + Blog Launch</div><span class="tt-tag">Agent</span></div>
+          </div>
+          <div class="day-node">
+            <div class="node-dot done-amber">06<div class="check">✓</div></div>
+            <span class="node-label">3-Stage Pipeline</span>
+            <div class="tooltip amber"><div class="tt-day">Day 06</div><div class="tt-title">3-Stage Pipeline</div><span class="tt-tag">Orchestration</span></div>
+          </div>
+          <div class="day-node">
+            <div class="node-dot done-amber">07<div class="check">✓</div></div>
+            <span class="node-label">Status Report</span>
+            <div class="tooltip amber"><div class="tt-day">Day 07</div><div class="tt-title">Status Report Skill</div><span class="tt-tag">Skill</span></div>
+          </div>
+          <div class="day-node">
+            <div class="node-dot done-amber">08<div class="check">✓</div></div>
+            <span class="node-label">Knowledge Base</span>
+            <div class="tooltip amber"><div class="tt-day">Day 08</div><div class="tt-title">Knowledge Base</div><span class="tt-tag">RAG Foundation</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 3 -->
+      <div class="phase-row">
+        <div class="phase-label">
+          <span class="ph-num" style="color:#22c55e">Phase 03</span>
+          <span class="ph-name">LLM & Orchestration</span>
+          <span class="ph-range">Days 9–12</span>
+        </div>
+        <div class="day-strip">
+          <div class="day-node">
+            <div class="node-dot done-green">09<div class="check">✓</div></div>
+            <span class="node-label">Feedback Agent</span>
+            <div class="tooltip green"><div class="tt-day">Day 09</div><div class="tt-title">Feedback Agent + First Claude Calls</div><span class="tt-tag">LLM</span></div>
+          </div>
+          <div class="day-node">
+            <div class="node-dot done-green">10<div class="check">✓</div></div>
+            <span class="node-label">Dependency Agent</span>
+            <div class="tooltip green"><div class="tt-day">Day 10</div><div class="tt-title">Dependency Agent</div><span class="tt-tag">LLM</span></div>
+          </div>
+          <div class="day-node">
+            <div class="node-dot done-green">11<div class="check">✓</div></div>
+            <span class="node-label">AgentHarness + Evals</span>
+            <div class="tooltip green"><div class="tt-day">Day 11</div><div class="tt-title">AgentHarness + Eval Framework</div><span class="tt-tag">Infrastructure</span></div>
+          </div>
+          <div class="day-node">
+            <div class="node-dot done-green">12<div class="check">✓</div></div>
+            <span class="node-label">Multi-Agent</span>
+            <div class="tooltip green"><div class="tt-day">Day 12</div><div class="tt-title">Multi-Agent Orchestrator</div><span class="tt-tag">Multi-Agent</span></div>
+          </div>
+          <div class="day-node">
+            <div class="node-dot soon">13</div>
+            <span class="node-label">MCP Server</span>
+            <div class="tooltip blue"><div class="tt-day">Day 13</div><div class="tt-title">MCP Server Integration</div><span class="tt-tag">MCP</span></div>
+          </div>
+          <div class="day-node">
+            <div class="node-dot soon">14</div>
+            <span class="node-label">Full Demo</span>
+            <div class="tooltip blue"><div class="tt-day">Day 14</div><div class="tt-title">Executive TPM Copilot</div><span class="tt-tag">Full Demo</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Infra -->
+      <div class="phase-row">
+        <div class="phase-label">
+          <span class="ph-num" style="color:#a855f7">Infra</span>
+          <span class="ph-name">Infrastructure & Docs</span>
+          <span class="ph-range">Ongoing</span>
+        </div>
+        <div class="day-strip">
+          <div class="day-node">
+            <div class="node-dot done-purple">GH<div class="check">✓</div></div>
+            <span class="node-label">Git Hook</span>
+            <div class="tooltip purple"><div class="tt-day">Infra</div><div class="tt-title">Git Hook + CLAUDE.md Enforcement</div><span class="tt-tag">Automation</span></div>
+          </div>
+          <div class="day-node">
+            <div class="node-dot done-purple">📝<div class="check">✓</div></div>
+            <span class="node-label">Blog + Docs</span>
+            <div class="tooltip purple"><div class="tt-day">Docs</div><div class="tt-title">Blog + Component Reference + Timeline</div><span class="tt-tag">Publishing</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /phase-lanes -->
+
+    <!-- Progress bar -->
+    <div class="progress-row">
+      <span class="prog-label">Progress</span>
+      <div class="prog-track"><div class="prog-fill"></div></div>
+      <span class="prog-pct">85.7%</span>
+    </div>
+
+  </div><!-- /roadmap -->
+
+  <div class="footer">
+    <p class="footer-by">Built by <strong>Shweta Singh</strong> · Senior Manager, TPM · Google</p>
+    <div class="footer-links">
+      <a href="https://shwsingh.github.io/pm-tpm-ai-tools/">Blog</a>
+      <a href="https://github.com/shwsingh/pm-tpm-ai-tools">GitHub</a>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

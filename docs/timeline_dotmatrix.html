@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI TPM Copilot — Dot Matrix</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #09090b;
+  --surface: #0f0f14;
+  --border: #1c1c28;
+  --blue: #3b82f6;
+  --amber: #f59e0b;
+  --green: #22c55e;
+  --purple: #a855f7;
+  --muted: #52525b;
+  --text: #e4e4e7;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  background: var(--bg);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.card {
+  width: 860px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  overflow: visible;
+  padding: 36px 40px 32px;
+}
+
+/* Header */
+.card-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: 32px;
+}
+.eyebrow {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--blue); margin-bottom: 6px;
+}
+.card-title { font-size: 24px; font-weight: 900; letter-spacing: -0.04em; color: var(--text); line-height: 1.1; }
+.card-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+.counter {
+  text-align: right;
+}
+.counter .big {
+  font-size: 48px; font-weight: 900; letter-spacing: -0.06em; color: var(--text); line-height: 1;
+}
+.counter .big span { font-size: 20px; color: var(--muted); }
+.counter .sub { font-size: 10px; color: var(--muted); letter-spacing: 0.04em; margin-top: 4px; text-align: right; }
+
+/* Dot matrix */
+.matrix-section { margin-bottom: 28px; }
+
+.matrix-label {
+  font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+  margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+}
+.matrix-label::after {
+  content: ""; flex: 1; height: 1px; background: var(--border);
+}
+
+.dot-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  width: 56px; height: 56px;
+  border-radius: 12px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 2px;
+  cursor: default;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  position: relative;
+  border: 1px solid transparent;
+}
+.chip:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  z-index: 10;
+}
+
+/* Phase-colored chips */
+.chip.blue   { background: rgba(59,130,246,0.12); border-color: rgba(59,130,246,0.25); }
+.chip.amber  { background: rgba(245,158,11,0.12);  border-color: rgba(245,158,11,0.25); }
+.chip.green  { background: rgba(34,197,94,0.12);   border-color: rgba(34,197,94,0.25); }
+.chip.purple { background: rgba(168,85,247,0.12);  border-color: rgba(168,85,247,0.25); }
+.chip.soon   { background: transparent; border: 1px dashed #2a2a3a; opacity: 0.45; }
+
+.chip .chip-num {
+  font-size: 16px; font-weight: 900; letter-spacing: -0.04em; line-height: 1;
+}
+.chip.blue   .chip-num { color: #93c5fd; }
+.chip.amber  .chip-num { color: #fcd34d; }
+.chip.green  .chip-num { color: #86efac; }
+.chip.purple .chip-num { color: #d8b4fe; }
+.chip.soon   .chip-num { color: #27272a; }
+
+.chip .chip-tag {
+  font-size: 7px; font-weight: 700; letter-spacing: 0.05em;
+  text-transform: uppercase; line-height: 1;
+  white-space: nowrap;
+}
+.chip.blue   .chip-tag { color: rgba(147,197,253,0.6); }
+.chip.amber  .chip-tag { color: rgba(252,211,77,0.6); }
+.chip.green  .chip-tag { color: rgba(134,239,172,0.6); }
+.chip.purple .chip-tag { color: rgba(216,180,254,0.6); }
+.chip.soon   .chip-tag { color: #27272a; }
+
+/* Check badge */
+.chip .ck {
+  position: absolute; top: -5px; right: -5px;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: #22c55e; font-size: 8px; color: #000;
+  display: flex; align-items: center; justify-content: center; font-weight: 900;
+  border: 2px solid var(--surface);
+}
+
+/* Tooltip */
+.chip .tooltip {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%; transform: translateX(-50%);
+  background: #18181b;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  width: 175px;
+  z-index: 99;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.1s ease;
+  white-space: normal;
+  text-align: left;
+}
+.chip:hover .tooltip { opacity: 1; }
+.chip:first-child .tooltip, .chip:nth-child(2) .tooltip { left: 0; transform: none; }
+.chip:last-child .tooltip { left: auto; right: 0; transform: none; }
+
+.tooltip .tt-head { font-size: 9px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
+.tooltip .tt-head.blue   { color: #3b82f6; }
+.tooltip .tt-head.amber  { color: #f59e0b; }
+.tooltip .tt-head.green  { color: #22c55e; }
+.tooltip .tt-head.purple { color: #a855f7; }
+.tooltip .tt-title { font-size: 12px; font-weight: 700; color: var(--text); line-height: 1.35; margin-bottom: 5px; }
+.tooltip .tt-desc  { font-size: 10px; color: var(--muted); line-height: 1.5; }
+
+/* Progress bar */
+.progress-section {
+  margin-bottom: 24px;
+}
+.progress-top {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 6px;
+}
+.progress-top .ptl { font-size: 10px; font-weight: 600; color: var(--muted); letter-spacing: 0.04em; }
+.progress-top .ptr { font-size: 10px; font-weight: 700; color: var(--text); }
+.progress-track {
+  height: 4px; background: var(--border); border-radius: 99px; overflow: hidden;
+}
+.progress-fill {
+  height: 100%; width: 85.7%;
+  background: linear-gradient(90deg, var(--blue) 0%, var(--amber) 50%, var(--green) 100%);
+  border-radius: 99px;
+}
+
+/* Footer */
+.card-footer {
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.footer-by { font-size: 11px; color: #3f3f46; }
+.footer-by strong { color: var(--muted); }
+.footer-links { display: flex; gap: 14px; }
+.footer-links a {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+  color: #3f3f46; text-decoration: none; transition: color 0.1s;
+}
+.footer-links a:hover { color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="card">
+
+  <!-- Header -->
+  <div class="card-header">
+    <div>
+      <p class="eyebrow">14-Day Vibe Coding Challenge · June 2026</p>
+      <h1 class="card-title">AI TPM Copilot<br>Dot Matrix</h1>
+      <p class="card-sub">Hover any chip for details · 12 of 14 complete</p>
+    </div>
+    <div class="counter">
+      <div class="big">12<span>/14</span></div>
+      <p class="sub">DAYS COMPLETE</p>
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-section">
+    <div class="progress-top">
+      <span class="ptl">Overall Progress</span>
+      <span class="ptr">85.7% — 2 days remaining</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill"></div></div>
+  </div>
+
+  <!-- Phase 1 chips -->
+  <div class="matrix-section">
+    <div class="matrix-label" style="color:#3b82f6">Phase 01 — Foundation</div>
+    <div class="dot-row">
+
+      <div class="chip blue">
+        <div class="ck">✓</div>
+        <span class="chip-num">00</span>
+        <span class="chip-tag">Setup</span>
+        <div class="tooltip"><div class="tt-head blue">Day 00</div><div class="tt-title">Repo + 14-Day Plan</div><div class="tt-desc">Repository, 14-day curriculum, commit conventions</div></div>
+      </div>
+
+      <div class="chip blue">
+        <div class="ck">✓</div>
+        <span class="chip-num">01</span>
+        <span class="chip-tag">UI</span>
+        <div class="tooltip"><div class="tt-head blue">Day 01</div><div class="tt-title">TPM Dashboard</div><div class="tt-desc">Streamlit app with module cards for every planned capability</div></div>
+      </div>
+
+      <div class="chip blue">
+        <div class="ck">✓</div>
+        <span class="chip-num">02</span>
+        <span class="chip-tag">Heuristic</span>
+        <div class="tooltip"><div class="tt-head blue">Day 02</div><div class="tt-title">Launch Risk Analyzer</div><div class="tt-desc">Keyword-based risk scoring. High / Medium / Low. No LLM.</div></div>
+      </div>
+
+      <div class="chip blue">
+        <div class="ck">✓</div>
+        <span class="chip-num">03</span>
+        <span class="chip-tag">Skill</span>
+        <div class="tooltip"><div class="tt-head blue">Day 03</div><div class="tt-title">First Skill Spec</div><div class="tt-desc">launch_risk_analysis.md — prompt-style behavior contract</div></div>
+      </div>
+
+      <div class="chip blue">
+        <div class="ck">✓</div>
+        <span class="chip-num">04</span>
+        <span class="chip-tag">Skill</span>
+        <div class="tooltip"><div class="tt-head blue">Day 04</div><div class="tt-title">PRD Builder Skill</div><div class="tt-desc">Exec-ready PRD spec with agent-critical sections and critique loop</div></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Phase 2 chips -->
+  <div class="matrix-section">
+    <div class="matrix-label" style="color:#f59e0b">Phase 02 — Skills & Agents</div>
+    <div class="dot-row">
+
+      <div class="chip amber">
+        <div class="ck">✓</div>
+        <span class="chip-num">05</span>
+        <span class="chip-tag">Agent</span>
+        <div class="tooltip"><div class="tt-head amber">Day 05</div><div class="tt-title">Bug Triage Agent + Blog</div><div class="tt-desc">First agent with stable output contract. Route-to-Lead safety net.</div></div>
+      </div>
+
+      <div class="chip amber">
+        <div class="ck">✓</div>
+        <span class="chip-num">06</span>
+        <span class="chip-tag">Orchestration</span>
+        <div class="tooltip"><div class="tt-head amber">Day 06</div><div class="tt-title">3-Stage Pipeline</div><div class="tt-desc">Ingest → Triage → Escalation Handler. Stage outputs feed next stage.</div></div>
+      </div>
+
+      <div class="chip amber">
+        <div class="ck">✓</div>
+        <span class="chip-num">07</span>
+        <span class="chip-tag">Skill</span>
+        <div class="tooltip"><div class="tt-head amber">Day 07</div><div class="tt-title">Status Report Skill</div><div class="tt-desc">Structured form → exec report → 5-dimension quality eval</div></div>
+      </div>
+
+      <div class="chip amber">
+        <div class="ck">✓</div>
+        <span class="chip-num">08</span>
+        <span class="chip-tag">RAG</span>
+        <div class="tooltip"><div class="tt-head amber">Day 08</div><div class="tt-title">Knowledge Base</div><div class="tt-desc">Upload .txt .md .docx .csv — chunked keyword search. No vector DB.</div></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Phase 3 chips -->
+  <div class="matrix-section">
+    <div class="matrix-label" style="color:#22c55e">Phase 03 — LLM & Orchestration</div>
+    <div class="dot-row">
+
+      <div class="chip green">
+        <div class="ck">✓</div>
+        <span class="chip-num">09</span>
+        <span class="chip-tag">LLM</span>
+        <div class="tooltip"><div class="tt-head green">Day 09</div><div class="tt-title">Feedback Agent + Claude</div><div class="tt-desc">Heuristic swapped for Claude — one function, zero pipeline changes</div></div>
+      </div>
+
+      <div class="chip green">
+        <div class="ck">✓</div>
+        <span class="chip-num">10</span>
+        <span class="chip-tag">LLM</span>
+        <div class="tooltip"><div class="tt-head green">Day 10</div><div class="tt-title">Dependency Agent</div><div class="tt-desc">Claude reasons over full dependency graph — critical path, cascading risks</div></div>
+      </div>
+
+      <div class="chip green">
+        <div class="ck">✓</div>
+        <span class="chip-num">11</span>
+        <span class="chip-tag">Infra</span>
+        <div class="tooltip"><div class="tt-head green">Day 11</div><div class="tt-title">AgentHarness + Evals</div><div class="tt-desc">Unified Claude calls. Claude-as-judge scores outputs criterion by criterion.</div></div>
+      </div>
+
+      <div class="chip green">
+        <div class="ck">✓</div>
+        <span class="chip-num">12</span>
+        <span class="chip-tag">Multi-Agent</span>
+        <div class="tooltip"><div class="tt-head green">Day 12</div><div class="tt-title">Multi-Agent Orchestrator</div><div class="tt-desc">Free-text TPM request → agent loop → Claude picks tools → exec briefing</div></div>
+      </div>
+
+      <div class="chip soon">
+        <span class="chip-num">13</span>
+        <span class="chip-tag">MCP</span>
+        <div class="tooltip"><div class="tt-head blue">Day 13</div><div class="tt-title">MCP Server Integration</div><div class="tt-desc">Real MCP server with resources, tools, prompts. Wired to Claude Desktop.</div></div>
+      </div>
+
+      <div class="chip soon">
+        <span class="chip-num">14</span>
+        <span class="chip-tag">Demo</span>
+        <div class="tooltip"><div class="tt-head blue">Day 14</div><div class="tt-title">Executive TPM Copilot</div><div class="tt-desc">One interface. All agents. Harness + loops + MCP + multi-agent end-to-end.</div></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Infra chips -->
+  <div class="matrix-section" style="margin-bottom:0;">
+    <div class="matrix-label" style="color:#a855f7">Infrastructure & Docs — Shipped Alongside</div>
+    <div class="dot-row">
+
+      <div class="chip purple">
+        <div class="ck">✓</div>
+        <span class="chip-num" style="font-size:12px;">Hook</span>
+        <span class="chip-tag">Automation</span>
+        <div class="tooltip"><div class="tt-head purple">Infra</div><div class="tt-title">Git Hook + CLAUDE.md</div><div class="tt-desc">post-commit hook checks 4 tracking files. Warns if documentation drifted.</div></div>
+      </div>
+
+      <div class="chip purple">
+        <div class="ck">✓</div>
+        <span class="chip-num" style="font-size:12px;">Blog</span>
+        <span class="chip-tag">Publishing</span>
+        <div class="tooltip"><div class="tt-head purple">Docs</div><div class="tt-title">Blog + Components + Timeline</div><div class="tt-desc">GitHub Pages blog. Component reference. Timeline visualizations.</div></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="card-footer" style="margin-top:24px;">
+    <p class="footer-by">Built by <strong>Shweta Singh</strong> · Senior Manager, TPM · Google</p>
+    <div class="footer-links">
+      <a href="https://shwsingh.github.io/pm-tpm-ai-tools/">Blog</a>
+      <a href="https://shwsingh.github.io/pm-tpm-ai-tools/components.html">Components</a>
+      <a href="https://github.com/shwsingh/pm-tpm-ai-tools">GitHub</a>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

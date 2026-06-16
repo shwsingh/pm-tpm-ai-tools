@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI TPM Copilot — Branch Timeline</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #09090b;
+  --surface: #0f0f14;
+  --border: #1c1c28;
+  --blue: #3b82f6;
+  --amber: #f59e0b;
+  --green: #22c55e;
+  --purple: #a855f7;
+  --muted: #52525b;
+  --text: #e4e4e7;
+  --spine: #1e1e2e;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  background: var(--bg);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 40px 24px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap {
+  width: 760px;
+}
+
+/* Header */
+.hdr {
+  margin-bottom: 32px;
+}
+.eyebrow {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--blue); margin-bottom: 6px;
+}
+.hdr h1 { font-size: 22px; font-weight: 900; letter-spacing: -0.04em; color: var(--text); }
+.hdr p { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+/* Card */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 32px 36px;
+}
+
+/* Branch graph layout */
+.branch-graph {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: 0;
+}
+
+/* Left column: svg spine + branch arms */
+.spine-col { position: relative; }
+
+/* Right column: day entries */
+.entry-col { display: flex; flex-direction: column; }
+
+/* Each row in the graph */
+.graph-row {
+  display: contents;
+}
+
+/* Spine node */
+.spine-node {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 56px;
+  position: relative;
+}
+
+/* Vertical connecting line */
+.spine-node::before {
+  content: "";
+  position: absolute;
+  left: 50%; transform: translateX(-50%);
+  top: 0; bottom: 0;
+  width: 2px;
+  background: var(--spine);
+  z-index: 0;
+}
+.spine-node:first-child::before { top: 50%; }
+.spine-node:last-child::before  { bottom: 50%; }
+
+/* The actual circle */
+.spine-node .dot {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; font-weight: 800; letter-spacing: 0.03em;
+  border: 2px solid transparent;
+  z-index: 1;
+  transition: transform 0.12s ease;
+  position: relative;
+}
+.spine-node .dot:hover { transform: scale(1.15); }
+
+.dot.blue   { background: rgba(59,130,246,0.2);  border-color: #3b82f6; color: #93c5fd; }
+.dot.amber  { background: rgba(245,158,11,0.2);  border-color: #f59e0b; color: #fcd34d; }
+.dot.green  { background: rgba(34,197,94,0.2);   border-color: #22c55e; color: #86efac; }
+.dot.purple { background: rgba(168,85,247,0.2);  border-color: #a855f7; color: #d8b4fe; }
+.dot.soon   { background: transparent; border: 2px dashed #2a2a3a; color: #3f3f46; }
+
+/* Checkmark overlay */
+.dot .ck {
+  position: absolute; top: -5px; right: -5px;
+  width: 12px; height: 12px; border-radius: 50%;
+  background: #22c55e; font-size: 7px; color: #000;
+  display: flex; align-items: center; justify-content: center; font-weight: 900;
+}
+
+/* Phase header rows */
+.phase-header-node {
+  display: flex; align-items: center; justify-content: center;
+  height: 44px; position: relative;
+}
+.phase-header-node::before {
+  content: "";
+  position: absolute;
+  left: 50%; transform: translateX(-50%);
+  top: 0; bottom: 0;
+  width: 2px; background: var(--spine); z-index: 0;
+}
+.phase-header-node .ph-dot {
+  width: 10px; height: 10px; border-radius: 50%; z-index: 1;
+}
+
+.phase-header-entry {
+  display: flex; align-items: center;
+  height: 44px; padding-left: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.phase-header-entry .ph-label {
+  font-size: 9px; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* Entry rows */
+.entry {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 56px;
+  padding: 0 0 0 16px;
+  border-bottom: 1px solid var(--border);
+  cursor: default;
+  transition: background 0.1s ease;
+  border-radius: 0 8px 8px 0;
+}
+.entry:hover { background: rgba(255,255,255,0.02); }
+.entry:last-child { border-bottom: none; }
+
+.entry .e-top {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 2px;
+}
+.entry .e-day {
+  font-size: 9px; font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.entry .e-tag {
+  font-size: 9px; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase; padding: 1px 7px; border-radius: 99px;
+}
+.entry .e-title {
+  font-size: 12px; font-weight: 700; color: var(--text); line-height: 1.3;
+}
+.entry.soon .e-title { color: #3f3f46; }
+.entry .e-desc {
+  font-size: 10px; color: var(--muted); margin-top: 1px; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis; max-width: 550px;
+}
+.entry.soon .e-desc { color: #2a2a3a; }
+
+/* Colors per phase */
+.e-day.blue  { color: rgba(59,130,246,0.7); }
+.e-day.amber { color: rgba(245,158,11,0.7); }
+.e-day.green { color: rgba(34,197,94,0.7); }
+.e-day.purple { color: rgba(168,85,247,0.7); }
+.e-day.soon  { color: #2a2a3a; }
+
+.e-tag.blue   { background: rgba(59,130,246,0.12); color: #93c5fd; }
+.e-tag.amber  { background: rgba(245,158,11,0.12); color: #fcd34d; }
+.e-tag.green  { background: rgba(34,197,94,0.12);  color: #86efac; }
+.e-tag.purple { background: rgba(168,85,247,0.12); color: #d8b4fe; }
+.e-tag.soon   { background: transparent; color: #2a2a3a; border: 1px dashed #1e1e2e; }
+
+/* Progress + footer */
+.bottom {
+  margin-top: 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px;
+}
+.prog-wrap { display: flex; align-items: center; gap: 10px; flex: 1; }
+.prog-label { font-size: 11px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+.prog-track { flex: 1; height: 3px; background: var(--border); border-radius: 99px; overflow: hidden; }
+.prog-fill { height: 100%; width: 85.7%; background: linear-gradient(90deg, var(--blue), var(--amber), var(--green)); border-radius: 99px; }
+.prog-pct { font-size: 11px; font-weight: 800; color: var(--text); }
+
+.footer-by { font-size: 11px; color: #3f3f46; white-space: nowrap; }
+.footer-by strong { color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hdr">
+    <p class="eyebrow">14-Day Vibe Coding Challenge · June 2026</p>
+    <h1>AI TPM Copilot — Branch Timeline</h1>
+    <p>Git-log style · 12 of 14 days complete</p>
+  </div>
+
+  <div class="card">
+    <div class="branch-graph">
+
+      <!-- Phase 1 header -->
+      <div class="phase-header-node"><div class="ph-dot" style="background:#3b82f6"></div></div>
+      <div class="phase-header-entry"><span class="ph-label" style="color:#3b82f6">Phase 01 — Foundation &nbsp;·&nbsp; Days 0–4</span></div>
+
+      <!-- Days 0–4 -->
+      <div class="spine-node"><div class="dot blue">00<div class="ck">✓</div></div></div>
+      <div class="entry"><div class="e-top"><span class="e-day blue">Day 00</span><span class="e-tag blue">Setup</span></div><div class="e-title">Repo + 14-Day Plan</div><div class="e-desc">Repository setup, 14-day curriculum, commit conventions</div></div>
+
+      <div class="spine-node"><div class="dot blue">01<div class="ck">✓</div></div></div>
+      <div class="entry"><div class="e-top"><span class="e-day blue">Day 01</span><span class="e-tag blue">UI</span></div><div class="e-title">TPM Dashboard Homepage</div><div class="e-desc">Streamlit app with module cards for every planned capability</div></div>
+
+      <div class="spine-node"><div class="dot blue">02<div class="ck">✓</div></div></div>
+      <div class="entry"><div class="e-top"><span class="e-day blue">Day 02</span><span class="e-tag blue">Heuristic</span></div><div class="e-title">Launch Risk Analyzer</div><div class="e-desc">Keyword-based risk scoring — High / Medium / Low. No LLM.</div></div>
+
+      <div class="spine-node"><div class="dot blue">03<div class="ck">✓</div></div></div>
+      <div class="entry"><div class="e-top"><span class="e-day blue">Day 03</span><span class="e-tag blue">Skill</span></div><div class="e-title">First Skill Spec</div><div class="e-desc">launch_risk_analysis.md — first prompt-style behavior contract</div></div>
+
+      <div class="spine-node"><div class="dot blue">04<div class="ck">✓</div></div></div>
+      <div class="entry"><div class="e-top"><span class="e-day blue">Day 04</span><span class="e-tag blue">Skill</span></div><div class="e-title">PRD Builder Skill</div><div class="e-desc">Exec-ready PRD spec with agent-critical sections and critique loop</div></div>
+
+      <!-- Phase 2 header -->
+      <div class="phase-header-node"><div class="ph-dot" style="background:#f59e0b"></div></div>
+      <div class="phase-header-entry"><span class="ph-label" style="color:#f59e0b">Phase 02 — Skills & Agents &nbsp;·&nbsp; Days 5–8</span></div>
+
+      <div class="spine-node"><div class="dot amber">05<div class="ck">✓</div></div></div>
+      <div class="entry"><div class="e-top"><span class="e-day amber">Day 05</span><span class="e-tag amber">Agent</span></div><div class="e-title">Bug Triage Agent + Blog Launch</div><div class="e-desc">First agent — heuristic classifier with stable output contract</div></div>
+
+      <div class="spine-node"><div class="dot amber">06<div class="ck">✓</div></div></div>
+      <div class="entry"><div class="e-top"><span class="e-day amber">Day 06</span><span class="e-tag amber">Orchestration</span></div><div class="e-title">3-Stage Pipeline</div><div class="e-desc">Ingest → Triage → Escalation Handler. Pure functions, stage outputs feed next</div></div>
+
+      <div class="spine-node"><div class="dot amber">07<div class="ck">✓</div></div></div>
+      <div class="entry"><div class="e-top"><span class="e-day amber">Day 07</span><span class="e-tag amber">Skill</span></div><div class="e-title">Status Report Skill</div><div class="e-desc">Structured form → exec report → 5-dimension quality eval</div></div>
+
+      <div class="spine-node"><div class="dot amber">08<div class="ck">✓</div></div></div>
+      <div class="entry"><div class="e-top"><span class="e-day amber">Day 08</span><span class="e-tag amber">RAG Foundation</span></div><div class="e-title">Knowledge Base</div><div class="e-desc">Upload .txt .md .docx .csv — chunked keyword search. No vector DB.</div></div>
+
+      <!-- Phase 3 header -->
+      <div class="phase-header-node"><div class="ph-dot" style="background:#22c55e"></div></div>
+      <div class="phase-header-entry"><span class="ph-label" style="color:#22c55e">Phase 03 — LLM & Orchestration &nbsp;·&nbsp; Days 9–12</span></div>
+
+      <div class="spine-node"><div class="dot green">09<div class="ck">✓</div></div></div>
+      <div class="entry"><div class="e-top"><span class="e-day green">Day 09</span><span class="e-tag green">LLM</span></div><div class="e-title">Feedback Agent + First Claude Calls</div><div class="e-desc">Heuristic triage swapped for Claude — one function, zero pipeline changes</div></div>
+
+      <div class="spine-node"><div class="dot green">10<div class="ck">✓</div></div></div>
+      <div class="entry"><div class="e-top"><span class="e-day green">Day 10</span><span class="e-tag green">LLM</span></div><div class="e-title">Dependency Agent</div><div class="e-desc">Claude reasons over full dependency graph — critical path, cascading risks</div></div>
+
+      <div class="spine-node"><div class="dot green">11<div class="ck">✓</div></div></div>
+      <div class="entry"><div class="e-top"><span class="e-day green">Day 11</span><span class="e-tag green">Infrastructure</span></div><div class="e-title">AgentHarness + Eval Framework</div><div class="e-desc">Unified Claude calls. Claude-as-judge scores outputs criterion by criterion</div></div>
+
+      <div class="spine-node"><div class="dot green">12<div class="ck">✓</div></div></div>
+      <div class="entry"><div class="e-top"><span class="e-day green">Day 12</span><span class="e-tag green">Multi-Agent</span></div><div class="e-title">Multi-Agent Orchestrator</div><div class="e-desc">Free-text TPM request → agent loop → Claude picks tools → exec briefing</div></div>
+
+      <!-- Coming Soon header -->
+      <div class="phase-header-node"><div class="ph-dot" style="background:#2a2a3a"></div></div>
+      <div class="phase-header-entry"><span class="ph-label" style="color:#3f3f46">Coming Soon — Est. Week 3</span></div>
+
+      <div class="spine-node"><div class="dot soon">13</div></div>
+      <div class="entry soon"><div class="e-top"><span class="e-day soon">Day 13</span><span class="e-tag soon">MCP</span></div><div class="e-title">MCP Server Integration</div><div class="e-desc">Real MCP server with resources, tools, and prompts wired to Claude Desktop</div></div>
+
+      <div class="spine-node"><div class="dot soon">14</div></div>
+      <div class="entry soon"><div class="e-top"><span class="e-day soon">Day 14</span><span class="e-tag soon">Full Demo</span></div><div class="e-title">Executive TPM Copilot — Full Demo</div><div class="e-desc">One interface. All agents. Harness + loops + MCP + multi-agent end-to-end</div></div>
+
+      <!-- Infra header -->
+      <div class="phase-header-node"><div class="ph-dot" style="background:#a855f7"></div></div>
+      <div class="phase-header-entry"><span class="ph-label" style="color:#a855f7">Infrastructure & Docs — Shipped Alongside</span></div>
+
+      <div class="spine-node"><div class="dot purple">GH<div class="ck">✓</div></div></div>
+      <div class="entry"><div class="e-top"><span class="e-day purple">Infra</span><span class="e-tag purple">Automation</span></div><div class="e-title">Git Hook + CLAUDE.md Enforcement</div><div class="e-desc">post-commit hook checks 4 tracking files. Warns with fix command if missing.</div></div>
+
+      <div class="spine-node"><div class="dot purple">📝<div class="ck">✓</div></div></div>
+      <div class="entry"><div class="e-top"><span class="e-day purple">Docs</span><span class="e-tag purple">Publishing</span></div><div class="e-title">Blog + Component Reference + Timeline</div><div class="e-desc">GitHub Pages blog. Component reference with tabbed card view. Timeline pages.</div></div>
+
+    </div><!-- /branch-graph -->
+
+    <div class="bottom">
+      <div class="prog-wrap">
+        <span class="prog-label">12 / 14 days</span>
+        <div class="prog-track"><div class="prog-fill"></div></div>
+        <span class="prog-pct">85.7%</span>
+      </div>
+      <p class="footer-by">Built by <strong>Shweta Singh</strong> · Senior Manager, TPM · Google</p>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Build Timeline — AI TPM Copilot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #09090b;
+  --surface: #111113;
+  --border: #1f1f23;
+  --text-1: #fafafa;
+  --text-2: #a1a1aa;
+  --text-3: #52525b;
+  --blue: #3b82f6;
+  --amber: #f59e0b;
+  --green: #22c55e;
+  --purple: #a855f7;
+  --max: 780px;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: "Inter", -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text-1);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+/* ─── NAV ─── */
+.nav {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(9,9,11,0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  height: 52px;
+  display: flex; align-items: center;
+}
+.nav-brand {
+  font-weight: 700; font-size: 13px; color: var(--text-1);
+  letter-spacing: -0.01em;
+}
+.nav-links {
+  display: flex; gap: 24px; margin-left: auto;
+}
+.nav-links a {
+  font-size: 13px; color: var(--text-3); text-decoration: none;
+  transition: color 0.15s;
+}
+.nav-links a:hover { color: var(--text-2); }
+
+/* ─── HERO ─── */
+.hero {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 72px 32px 48px;
+}
+.hero-eyebrow {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--text-3);
+  margin-bottom: 16px;
+}
+.hero-title {
+  font-size: clamp(32px, 5vw, 48px);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+  color: var(--text-1);
+  margin-bottom: 12px;
+}
+.hero-sub {
+  font-size: 16px; color: var(--text-2);
+  font-weight: 400;
+  max-width: 480px;
+}
+
+/* ─── PROGRESS ─── */
+.progress-section {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 0 32px 56px;
+}
+.progress-top {
+  display: flex; align-items: baseline; gap: 12px; margin-bottom: 20px;
+}
+.progress-big {
+  font-size: 72px; font-weight: 900; letter-spacing: -0.05em;
+  line-height: 1; color: var(--text-1);
+}
+.progress-label {
+  font-size: 14px; color: var(--text-3); font-weight: 400;
+}
+.progress-bar {
+  height: 3px; background: var(--border); border-radius: 99px;
+  margin-bottom: 20px; overflow: hidden;
+}
+.progress-fill {
+  height: 100%; border-radius: 99px; width: 85.7%;
+  background: linear-gradient(90deg, var(--blue) 0%, var(--amber) 40%, var(--green) 100%);
+}
+.day-dots {
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+.day-dot {
+  width: 32px; height: 32px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700; letter-spacing: -0.01em;
+  transition: transform 0.1s;
+}
+.day-dot:hover { transform: scale(1.1); }
+.day-dot.done-blue  { background: rgba(59,130,246,0.15); color: #93c5fd; border: 1px solid rgba(59,130,246,0.25); }
+.day-dot.done-amber { background: rgba(245,158,11,0.15); color: #fcd34d; border: 1px solid rgba(245,158,11,0.25); }
+.day-dot.done-green { background: rgba(34,197,94,0.15);  color: #86efac; border: 1px solid rgba(34,197,94,0.25); }
+.day-dot.coming     { background: transparent; color: var(--text-3); border: 1px dashed var(--border); }
+
+/* ─── PHASE CHAPTER HEADER ─── */
+.phase-chapter {
+  position: relative;
+  padding: 28px 32px 20px;
+  margin: 16px 0 0;
+  overflow: hidden;
+}
+.phase-chapter::before {
+  content: "";
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px;
+}
+.phase-chapter.blue::before  { background: var(--blue); }
+.phase-chapter.amber::before { background: var(--amber); }
+.phase-chapter.green::before { background: var(--green); }
+.phase-chapter.purple::before { background: var(--purple); }
+.phase-chapter-inner {
+  max-width: var(--max); margin: 0 auto;
+}
+.phase-num {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.15em;
+  text-transform: uppercase; margin-bottom: 4px;
+}
+.phase-chapter.blue  .phase-num { color: #93c5fd; }
+.phase-chapter.amber .phase-num { color: #fcd34d; }
+.phase-chapter.green .phase-num { color: #86efac; }
+.phase-chapter.purple .phase-num { color: #d8b4fe; }
+.phase-name {
+  font-size: 22px; font-weight: 800; letter-spacing: -0.03em;
+  color: var(--text-1); margin-bottom: 4px;
+}
+.phase-meta {
+  font-size: 13px; color: var(--text-3);
+}
+.phase-bg {
+  position: absolute; inset: 0; pointer-events: none;
+}
+.phase-chapter.blue  .phase-bg { background: radial-gradient(ellipse 60% 100% at 80% 50%, rgba(59,130,246,0.06) 0%, transparent 70%); }
+.phase-chapter.amber .phase-bg { background: radial-gradient(ellipse 60% 100% at 80% 50%, rgba(245,158,11,0.06) 0%, transparent 70%); }
+.phase-chapter.green .phase-bg { background: radial-gradient(ellipse 60% 100% at 80% 50%, rgba(34,197,94,0.06) 0%, transparent 70%); }
+.phase-chapter.purple .phase-bg { background: radial-gradient(ellipse 60% 100% at 80% 50%, rgba(168,85,247,0.06) 0%, transparent 70%); }
+
+/* ─── ENTRY ROW ─── */
+.entry {
+  position: relative;
+  max-width: var(--max); margin: 0 auto;
+  display: grid;
+  grid-template-columns: 96px 1px 1fr;
+  gap: 0 24px;
+  padding: 28px 32px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.12s;
+  cursor: default;
+}
+.entry:hover { background: rgba(255,255,255,0.015); }
+
+/* Phase accent bar on left of each entry */
+.entry::before {
+  content: "";
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px;
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+.entry:hover::before { opacity: 1; }
+.entry.blue::before  { background: var(--blue); }
+.entry.amber::before { background: var(--amber); }
+.entry.green::before { background: var(--green); }
+.entry.purple::before { background: var(--purple); }
+
+.day-num {
+  font-size: 56px; font-weight: 900; line-height: 1;
+  letter-spacing: -0.04em;
+  padding-top: 2px;
+  transition: transform 0.12s;
+  text-align: right;
+}
+.entry:hover .day-num { transform: scale(1.04); }
+.entry.blue  .day-num { color: rgba(59,130,246,0.7); }
+.entry.amber .day-num { color: rgba(245,158,11,0.7); }
+.entry.green .day-num { color: rgba(34,197,94,0.7); }
+.entry.purple .day-num { color: rgba(168,85,247,0.7); }
+
+.divider {
+  background: var(--border);
+  align-self: stretch;
+}
+
+.entry-content { min-width: 0; }
+
+.entry-top {
+  display: flex; align-items: flex-start;
+  justify-content: space-between; gap: 12px;
+  margin-bottom: 8px;
+}
+.entry-title {
+  font-size: 16px; font-weight: 700;
+  color: var(--text-1); letter-spacing: -0.02em;
+  line-height: 1.3;
+}
+.tag {
+  flex-shrink: 0;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 3px 10px; border-radius: 99px;
+  white-space: nowrap; margin-top: 2px;
+}
+.entry.blue  .tag { background: rgba(59,130,246,0.12);  color: #93c5fd;  border: 1px solid rgba(59,130,246,0.2); }
+.entry.amber .tag { background: rgba(245,158,11,0.12);  color: #fcd34d;  border: 1px solid rgba(245,158,11,0.2); }
+.entry.green .tag { background: rgba(34,197,94,0.12);   color: #86efac;  border: 1px solid rgba(34,197,94,0.2); }
+.entry.purple .tag { background: rgba(168,85,247,0.12); color: #d8b4fe;  border: 1px solid rgba(168,85,247,0.2); }
+
+.entry-desc {
+  font-size: 14px; color: var(--text-2);
+  line-height: 1.7; margin-bottom: 10px;
+}
+.bullets { list-style: none; padding: 0; margin: 10px 0; }
+.bullets li {
+  font-size: 13px; color: var(--text-3);
+  padding: 3px 0 3px 16px; position: relative; line-height: 1.6;
+}
+.bullets li::before {
+  content: "";
+  position: absolute; left: 0; top: 9px;
+  width: 5px; height: 5px; border-radius: 50%;
+}
+.entry.blue  .bullets li::before { background: rgba(59,130,246,0.5); }
+.entry.amber .bullets li::before { background: rgba(245,158,11,0.5); }
+.entry.green .bullets li::before { background: rgba(34,197,94,0.5); }
+.entry.purple .bullets li::before { background: rgba(168,85,247,0.5); }
+
+.insight {
+  font-size: 13px; font-style: italic;
+  color: var(--text-2); padding: 8px 12px;
+  border-radius: 4px; margin-top: 10px;
+  line-height: 1.6;
+}
+.entry.blue  .insight { color: #93c5fd; background: rgba(59,130,246,0.06);  border-left: 2px solid rgba(59,130,246,0.3); }
+.entry.amber .insight { color: #fcd34d; background: rgba(245,158,11,0.06);  border-left: 2px solid rgba(245,158,11,0.3); }
+.entry.green .insight { color: #86efac; background: rgba(34,197,94,0.06);   border-left: 2px solid rgba(34,197,94,0.3); }
+.entry.purple .insight { color: #d8b4fe; background: rgba(168,85,247,0.06); border-left: 2px solid rgba(168,85,247,0.3); }
+
+/* ─── INFRA STRIP ─── */
+.infra-strip {
+  max-width: var(--max); margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 0; border-bottom: 1px solid var(--border);
+}
+.infra-item {
+  padding: 24px 32px;
+  border-right: 1px solid var(--border);
+  position: relative;
+  transition: background 0.12s;
+}
+.infra-item:last-child { border-right: none; }
+.infra-item:hover { background: rgba(255,255,255,0.015); }
+.infra-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: rgba(168,85,247,0.6); margin-bottom: 6px;
+}
+.infra-title { font-size: 14px; font-weight: 700; color: var(--text-1); margin-bottom: 8px; }
+.infra-desc { font-size: 13px; color: var(--text-3); line-height: 1.6; }
+.infra-tag {
+  display: inline-block; margin-top: 10px;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 2px 8px; border-radius: 99px;
+  background: rgba(168,85,247,0.1); color: #d8b4fe;
+  border: 1px solid rgba(168,85,247,0.2);
+}
+
+/* ─── COMING SOON ─── */
+.coming-chapter {
+  max-width: var(--max); margin: 0 auto;
+  padding: 40px 32px 16px;
+}
+.coming-header {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 24px;
+}
+.coming-line { flex: 1; height: 1px; background: var(--border); }
+.coming-badge {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--text-3);
+  padding: 3px 10px; border: 1px dashed var(--border); border-radius: 99px;
+}
+.entry.coming {
+  opacity: 0.38;
+}
+.entry.coming .day-num {
+  color: var(--text-3) !important;
+  -webkit-text-stroke: 1px currentColor;
+  -webkit-text-fill-color: transparent;
+}
+.entry.coming .divider { background: var(--border); }
+.entry.coming .tag {
+  background: transparent !important; color: var(--text-3) !important;
+  border-color: var(--border) !important;
+}
+.entry.coming::after {
+  content: "COMING SOON";
+  position: absolute; top: 28px; right: 32px;
+  font-size: 9px; font-weight: 700; letter-spacing: 0.12em;
+  color: var(--text-3); border: 1px dashed var(--border);
+  padding: 2px 8px; border-radius: 99px;
+}
+
+/* ─── FOOTER ─── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 40px 32px;
+  text-align: center;
+}
+.footer-inner {
+  max-width: var(--max); margin: 0 auto;
+}
+footer p { font-size: 13px; color: var(--text-3); }
+footer a { color: var(--text-2); text-decoration: none; }
+footer a:hover { color: var(--text-1); }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <span class="nav-brand">AI TPM Copilot</span>
+  <div class="nav-links">
+    <a href="https://shwsingh.github.io/pm-tpm-ai-tools/">Blog</a>
+    <a href="https://shwsingh.github.io/pm-tpm-ai-tools/components.html">Component Reference</a>
+    <a href="https://github.com/shwsingh/pm-tpm-ai-tools">GitHub</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <p class="hero-eyebrow">Vibe Coding Challenge · June 2026</p>
+  <h1 class="hero-title">14-Day Build<br>Timeline</h1>
+  <p class="hero-sub">From a blank repo to a multi-agent AI TPM Copilot — one capability per day, in public.</p>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-section">
+  <div class="progress-top">
+    <span class="progress-big">12</span>
+    <span class="progress-label">of 14 days complete</span>
+  </div>
+  <div class="progress-bar"><div class="progress-fill"></div></div>
+  <div class="day-dots">
+    <div class="day-dot done-blue">00</div>
+    <div class="day-dot done-blue">01</div>
+    <div class="day-dot done-blue">02</div>
+    <div class="day-dot done-blue">03</div>
+    <div class="day-dot done-blue">04</div>
+    <div class="day-dot done-amber">05</div>
+    <div class="day-dot done-amber">06</div>
+    <div class="day-dot done-amber">07</div>
+    <div class="day-dot done-amber">08</div>
+    <div class="day-dot done-green">09</div>
+    <div class="day-dot done-green">10</div>
+    <div class="day-dot done-green">11</div>
+    <div class="day-dot done-green">12</div>
+    <div class="day-dot coming">13</div>
+    <div class="day-dot coming">14</div>
+  </div>
+</div>
+
+<!-- ═══════════════════ PHASE 1 ═══════════════════ -->
+<div class="phase-chapter blue">
+  <div class="phase-bg"></div>
+  <div class="phase-chapter-inner">
+    <p class="phase-num">Phase 01 · Days 0–4</p>
+    <h2 class="phase-name">Foundation</h2>
+    <p class="phase-meta">Repo setup · Skill specs · Heuristic tools · Output contracts defined before any AI</p>
+  </div>
+</div>
+
+<div class="entry blue">
+  <div class="day-num">00</div>
+  <div class="divider"></div>
+  <div class="entry-content">
+    <div class="entry-top">
+      <h3 class="entry-title">Repo + 14-Day Plan</h3>
+      <span class="tag">Setup</span>
+    </div>
+    <p class="entry-desc">Repository setup, 14-day curriculum, project structure and commit conventions defined.</p>
+  </div>
+</div>
+
+<div class="entry blue">
+  <div class="day-num">01</div>
+  <div class="divider"></div>
+  <div class="entry-content">
+    <div class="entry-top">
+      <h3 class="entry-title">TPM Dashboard Homepage</h3>
+      <span class="tag">UI</span>
+    </div>
+    <p class="entry-desc">Streamlit app with module cards for every planned capability — a living homepage that grows with the project.</p>
+  </div>
+</div>
+
+<div class="entry blue">
+  <div class="day-num">02</div>
+  <div class="divider"></div>
+  <div class="entry-content">
+    <div class="entry-top">
+      <h3 class="entry-title">Launch Risk Analyzer</h3>
+      <span class="tag">Heuristic</span>
+    </div>
+    <p class="entry-desc">Keyword-based risk scoring across High / Medium / Low tiers. No LLM — fast, explainable, zero API cost.</p>
+    <div class="insight">First working TPM tool. Proved the output contract before adding AI.</div>
+  </div>
+</div>
+
+<div class="entry blue">
+  <div class="day-num">03</div>
+  <div class="divider"></div>
+  <div class="entry-content">
+    <div class="entry-top">
+      <h3 class="entry-title">First Skill Spec</h3>
+      <span class="tag">Skill</span>
+    </div>
+    <p class="entry-desc">Wrote <code style="font-family:monospace;font-size:12px;background:rgba(255,255,255,0.06);padding:1px 6px;border-radius:4px">launch_risk_analysis.md</code> — the first prompt-style behavior contract with input, output schema, and eval rules.</p>
+    <div class="insight">Skills are specs, not code. Consumed by agents in later days.</div>
+  </div>
+</div>
+
+<div class="entry blue">
+  <div class="day-num">04</div>
+  <div class="divider"></div>
+  <div class="entry-content">
+    <div class="entry-top">
+      <h3 class="entry-title">PRD Builder Skill</h3>
+      <span class="tag">Skill</span>
+    </div>
+    <p class="entry-desc">Skill spec for exec-ready PRDs including agent-critical sections. Worked example with a senior-PM critique loop.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════ PHASE 2 ═══════════════════ -->
+<div class="phase-chapter amber">
+  <div class="phase-bg"></div>
+  <div class="phase-chapter-inner">
+    <p class="phase-num">Phase 02 · Days 5–8</p>
+    <h2 class="phase-name">Skills & Agents</h2>
+    <p class="phase-meta">First agent · 3-stage pipeline · Status report rubric · Knowledge base · RAG foundation</p>
+  </div>
+</div>
+
+<div class="entry amber">
+  <div class="day-num">05</div>
+  <div class="divider"></div>
+  <div class="entry-content">
+    <div class="entry-top">
+      <h3 class="entry-title">Bug Triage Agent + Blog Launch</h3>
+      <span class="tag">Agent</span>
+    </div>
+    <p class="entry-desc">First agent — heuristic classifier with stable output contract (severity, owner, escalate). Route-to-Lead safety net. GitHub Pages blog launched.</p>
+    <ul class="bullets">
+      <li>Output contract designed before any LLM — paid off through Day 12</li>
+      <li>Route-to-Lead: confidence boundary as a first-class output</li>
+      <li>Week 1 blog post published</li>
+    </ul>
+  </div>
+</div>
+
+<div class="entry amber">
+  <div class="day-num">06</div>
+  <div class="divider"></div>
+  <div class="entry-content">
+    <div class="entry-top">
+      <h3 class="entry-title">Agent Workflow — 3-Stage Pipeline</h3>
+      <span class="tag">Orchestration</span>
+    </div>
+    <p class="entry-desc">Ingest → Triage → Escalation Handler. Pure functions, stage outputs feed next stage via session state. Draft incident summaries and on-call messages.</p>
+    <div class="insight">Code orchestrates Claude — the deliberate contrast to Day 12's agent loop.</div>
+  </div>
+</div>
+
+<div class="entry amber">
+  <div class="day-num">07</div>
+  <div class="divider"></div>
+  <div class="entry-content">
+    <div class="entry-top">
+      <h3 class="entry-title">Status Report Skill</h3>
+      <span class="tag">Skill</span>
+    </div>
+    <p class="entry-desc">Structured form → exec report → 5-dimension quality eval. Status color derived from content, not self-reported. Catches optimism bias.</p>
+    <ul class="bullets">
+      <li>Rubric: Ask Specificity, Status Accuracy, Impact Clarity, Next Week Concreteness, Exec Readability</li>
+      <li>Each criterion: ❌ wrong example + ✅ right example</li>
+    </ul>
+  </div>
+</div>
+
+<div class="entry amber">
+  <div class="day-num">08</div>
+  <div class="divider"></div>
+  <div class="entry-content">
+    <div class="entry-top">
+      <h3 class="entry-title">Knowledge Base</h3>
+      <span class="tag">RAG Foundation</span>
+    </div>
+    <p class="entry-desc">Upload .txt, .md, .docx, .csv. Chunked and keyword-searched. No vector DB needed — chunking strategy matters more than the scorer at this scale.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════ PHASE 3 ═══════════════════ -->
+<div class="phase-chapter green">
+  <div class="phase-bg"></div>
+  <div class="phase-chapter-inner">
+    <p class="phase-num">Phase 03 · Days 9–12</p>
+    <h2 class="phase-name">LLM & Orchestration</h2>
+    <p class="phase-meta">First Claude calls · Dependency graph · AgentHarness · Multi-agent loop</p>
+  </div>
+</div>
+
+<div class="entry green">
+  <div class="day-num">09</div>
+  <div class="divider"></div>
+  <div class="entry-content">
+    <div class="entry-top">
+      <h3 class="entry-title">Feedback Agent + First Claude Calls</h3>
+      <span class="tag">LLM</span>
+    </div>
+    <p class="entry-desc">Heuristic triage swapped for Claude — one function change, zero pipeline changes. Feedback Agent: per-item sentiment, themes, severity, action + aggregate TPM next steps.</p>
+    <div class="insight">The Day 5 contract meant the LLM swap touched nothing downstream.</div>
+  </div>
+</div>
+
+<div class="entry green">
+  <div class="day-num">10</div>
+  <div class="divider"></div>
+  <div class="entry-content">
+    <div class="entry-top">
+      <h3 class="entry-title">Dependency Agent</h3>
+      <span class="tag">LLM</span>
+    </div>
+    <p class="entry-desc">Structured form for cross-team dependencies. Claude reasons over the full graph — critical path, cascading risks, TPM actions. One call, not one per dependency.</p>
+    <div class="insight">Cascade detection requires seeing the full graph at once.</div>
+  </div>
+</div>
+
+<div class="entry green">
+  <div class="day-num">11</div>
+  <div class="divider"></div>
+  <div class="entry-content">
+    <div class="entry-top">
+      <h3 class="entry-title">AgentHarness + Evaluation Framework</h3>
+      <span class="tag">Infrastructure</span>
+    </div>
+    <p class="entry-desc">All Claude calls unified through a single AgentHarness. Claude-as-judge scores any output against skill spec rules — criterion by criterion, pass/fail with reason.</p>
+    <ul class="bullets">
+      <li>Retry on JSON parse failure only — API errors surface immediately</li>
+      <li>Two-call eval pattern: agent produces, evaluator scores</li>
+      <li>Token dashboard: cumulative cost visible across the session</li>
+    </ul>
+  </div>
+</div>
+
+<div class="entry green">
+  <div class="day-num">12</div>
+  <div class="divider"></div>
+  <div class="entry-content">
+    <div class="entry-top">
+      <h3 class="entry-title">Multi-Agent Orchestrator</h3>
+      <span class="tag">Multi-Agent</span>
+    </div>
+    <p class="entry-desc">Free-text TPM request → agent loop → Claude picks tools → executes → synthesizes exec briefing. Every tool call visible: input, result, token count.</p>
+    <ul class="bullets">
+      <li>4 tools: triage_bug, analyze_feedback, analyze_dependencies, search_knowledge_base</li>
+      <li>Max 5 iterations. Tool errors continue the loop, don't crash it</li>
+    </ul>
+    <div class="insight">First surface where Claude orchestrates itself — not the code.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════ INFRA STRIP ═══════════════════ -->
+<div class="phase-chapter purple">
+  <div class="phase-bg"></div>
+  <div class="phase-chapter-inner">
+    <p class="phase-num">Shipped alongside · Infrastructure & Docs</p>
+    <h2 class="phase-name">Infrastructure & Publishing</h2>
+    <p class="phase-meta">Git hooks · CLAUDE.md enforcement · Blog · Component Reference · This timeline</p>
+  </div>
+</div>
+
+<div class="infra-strip">
+  <div class="infra-item">
+    <p class="infra-label">Automation</p>
+    <p class="infra-title">Git Hook + CLAUDE.md Enforcement</p>
+    <p class="infra-desc">post-commit hook fires on every Day N commit. Checks 4 tracking files were updated. Warns with fix command if missing — catches documentation drift at commit time.</p>
+    <span class="infra-tag">Automation</span>
+  </div>
+  <div class="infra-item">
+    <p class="infra-label">Publishing</p>
+    <p class="infra-title">Blog + Component Reference + Timeline</p>
+    <p class="infra-desc">GitHub Pages blog — Week 1 and Week 2 posts. Component reference with tabbed card view, role, impact, source links, hover tooltips. This page.</p>
+    <span class="infra-tag">Publishing</span>
+  </div>
+</div>
+
+<!-- ═══════════════════ COMING SOON ═══════════════════ -->
+<div class="coming-chapter">
+  <div class="coming-header">
+    <div class="coming-line"></div>
+    <span class="coming-badge">Coming soon</span>
+    <div class="coming-line"></div>
+  </div>
+</div>
+
+<div class="entry blue coming">
+  <div class="day-num">13</div>
+  <div class="divider"></div>
+  <div class="entry-content">
+    <div class="entry-top">
+      <h3 class="entry-title">MCP Server Integration</h3>
+      <span class="tag">MCP</span>
+    </div>
+    <p class="entry-desc">Real MCP server exposing TPM resources, tools, and prompts. Wired to Claude Desktop. Live data replaces structured forms.</p>
+  </div>
+</div>
+
+<div class="entry blue coming">
+  <div class="day-num">14</div>
+  <div class="divider"></div>
+  <div class="entry-content">
+    <div class="entry-top">
+      <h3 class="entry-title">Executive TPM Copilot</h3>
+      <span class="tag">Full Demo</span>
+    </div>
+    <p class="entry-desc">One interface. All agents. Harness + loops + MCP + multi-agent in a single end-to-end executive workflow.</p>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <p>AI TPM Copilot &nbsp;·&nbsp; 14-day vibe coding challenge by <a href="https://github.com/shwsingh">Shweta Singh</a> &nbsp;·&nbsp; <a href="https://github.com/shwsingh/pm-tpm-ai-tools">GitHub</a> &nbsp;·&nbsp; <a href="https://shwsingh.github.io/pm-tpm-ai-tools/components.html">Component Reference</a></p>
+  </div>
+</footer>
+
+</body>
+</html>
