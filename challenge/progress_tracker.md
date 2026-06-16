@@ -295,6 +295,37 @@ Lessons:
 
 ---
 
+## Day 14
+
+Status: COMPLETE
+
+Goal:
+Executive TPM Copilot — one unified interface combining live GitHub data, all agents, MCP servers, and the multi-agent loop into a single exec briefing.
+
+Built:
+- Day 14 section in app.py with 3 tabs: Live GitHub Feed, Executive Briefing, MCP Servers
+- `fetch_github_commits()` — GitHub REST API call via authenticated token, returns last 14 commits
+- `fetch_github_repo_stats()` — pulls stars, forks, open issues, repo size
+- Executive Briefing: feeds commit history into Claude → generates exec status report (GREEN/YELLOW/RED, velocity, milestones, next actions)
+- MCP Servers tab: combined Claude Desktop config for both TPM Copilot MCP + GitHub MCP (`npx @modelcontextprotocol/server-github`)
+- Challenge Complete summary panel — 14/14 progress bar, 4 key metrics
+- README badge updated to 14/14, 14_day_plan Day 14 → Done
+
+Key design decisions:
+1. Commit history as live data — no open issues/PRs, but 14 commits = the build log; feeds naturally into an exec briefing
+2. Auto-resolve GitHub token via `gh auth token` CLI — no manual token setup needed if gh is authenticated
+3. Executive Briefing calls Claude directly (not via orchestrator loop) — commit history is read-only context, no tool-use needed; a single call is the right pattern
+4. Combined MCP config in one code block — user copies one JSON to connect both servers to Claude Desktop simultaneously
+5. Challenge Complete panel as the capstone moment — 14/14 progress bar, metrics, visible closure
+
+Lessons:
+- The gh CLI token is the easiest auth path on Mac — `gh auth token` returns a valid PAT without any setup
+- Commit messages are surprisingly rich exec briefing material when read by Claude — it identifies velocity, milestones, and gaps naturally
+- A single Claude call beats an agent loop for summarisation tasks — loop overhead adds nothing when there's no tool-use decision to make
+- MCP is most powerful when two servers are combined — TPM data + GitHub data in one Claude Desktop conversation is genuinely useful
+
+---
+
 ## Day 13
 
 Status: COMPLETE

@@ -2075,3 +2075,235 @@ TPM resources, tools, and prompts directly to Claude Desktop (or any MCP client)
 
     st.code(config_json, language="json")
     st.caption("Config file location: `~/Library/Application Support/Claude/claude_desktop_config.json`")
+
+# ── Day 14: Executive TPM Copilot ────────────────────────────────────────────
+
+st.markdown("---")
+st.markdown('<div class="section-title">🎯 Day 14: Executive TPM Copilot</div>', unsafe_allow_html=True)
+st.markdown(
+    "The capstone: one interface that combines live GitHub data, all agents, "
+    "MCP resources, and the multi-agent loop into a single executive briefing. "
+    "Claude reads your repo's commit history and synthesises a TPM status report."
+)
+
+# ── GitHub live data ──────────────────────────────────────────────────────────
+
+GITHUB_REPO = "shwsingh/pm-tpm-ai-tools"
+
+def fetch_github_commits(token: str, repo: str, n: int = 14) -> list[dict]:
+    import requests
+    resp = requests.get(
+        f"https://api.github.com/repos/{repo}/commits?per_page={n}",
+        headers={"Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json"},
+        timeout=10,
+    )
+    if resp.status_code != 200:
+        return []
+    return [
+        {
+            "sha": c["sha"][:7],
+            "message": c["commit"]["message"].split("\n")[0],
+            "author": c["commit"]["author"]["name"],
+            "date": c["commit"]["author"]["date"][:10],
+        }
+        for c in resp.json()
+    ]
+
+def fetch_github_repo_stats(token: str, repo: str) -> dict:
+    import requests
+    resp = requests.get(
+        f"https://api.github.com/repos/{repo}",
+        headers={"Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json"},
+        timeout=10,
+    )
+    if resp.status_code != 200:
+        return {}
+    d = resp.json()
+    return {
+        "stars": d.get("stargazers_count", 0),
+        "forks": d.get("forks_count", 0),
+        "open_issues": d.get("open_issues_count", 0),
+        "size_kb": d.get("size", 0),
+        "default_branch": d.get("default_branch", "main"),
+        "description": d.get("description", ""),
+    }
+
+# ── Tabs ──────────────────────────────────────────────────────────────────────
+
+d14_tab1, d14_tab2, d14_tab3 = st.tabs(["📡 Live GitHub Feed", "🧠 Executive Briefing", "🔌 MCP Servers"])
+
+with d14_tab1:
+    st.subheader("Live GitHub Activity")
+    st.caption(f"Pulling from `{GITHUB_REPO}` via GitHub API")
+
+    gh_token = os.environ.get("GITHUB_TOKEN", "")
+    if not gh_token:
+        # Try gh CLI token
+        try:
+            import subprocess
+            result = subprocess.run(["gh", "auth", "token"], capture_output=True, text=True, timeout=5)
+            gh_token = result.stdout.strip()
+        except Exception:
+            gh_token = ""
+
+    if not gh_token:
+        st.warning("No GitHub token found. Set `GITHUB_TOKEN` in your environment or run `gh auth login`.")
+    else:
+        if st.button("Fetch Latest Activity", key="d14_fetch"):
+            with st.spinner("Calling GitHub API..."):
+                commits = fetch_github_commits(gh_token, GITHUB_REPO)
+                stats   = fetch_github_repo_stats(gh_token, GITHUB_REPO)
+                st.session_state["d14_commits"] = commits
+                st.session_state["d14_stats"]   = stats
+
+        commits = st.session_state.get("d14_commits", [])
+        stats   = st.session_state.get("d14_stats", {})
+
+        if stats:
+            sc1, sc2, sc3, sc4 = st.columns(4)
+            sc1.metric("Stars", stats["stars"])
+            sc2.metric("Forks", stats["forks"])
+            sc3.metric("Open Issues", stats["open_issues"])
+            sc4.metric("Repo Size", f"{stats['size_kb']} KB")
+
+        if commits:
+            st.markdown(f"**Last {len(commits)} commits:**")
+            for c in commits:
+                st.markdown(f"`{c['sha']}` · **{c['message']}** · {c['author']} · {c['date']}")
+        elif not stats:
+            st.info("Click **Fetch Latest Activity** to load live data from GitHub.")
+
+with d14_tab2:
+    st.subheader("Executive Briefing — AI-Generated")
+    st.caption("The multi-agent orchestrator reads your commit history and produces an exec briefing.")
+
+    if not ANTHROPIC_API_KEY:
+        st.warning("ANTHROPIC_API_KEY not set — needed for the executive briefing.")
+    else:
+        commits = st.session_state.get("d14_commits", [])
+
+        if not commits:
+            st.info("Fetch GitHub activity first (Live GitHub Feed tab), then generate the briefing.")
+        else:
+            commit_block = "\n".join(
+                f"- [{c['date']}] {c['message']} ({c['sha']})" for c in commits
+            )
+
+            briefing_prompt = f"""You are reviewing the 14-day build log for the AI TPM Copilot project.
+
+Here are the most recent commits from the GitHub repository ({GITHUB_REPO}):
+
+{commit_block}
+
+Produce an executive briefing covering:
+1. **Overall Status** (GREEN / YELLOW / RED with one-line rationale)
+2. **What Was Built** (3-5 bullets summarising the key capabilities shipped)
+3. **Build Velocity** (commits per day, any gaps or acceleration)
+4. **Technical Milestones** (the most significant architectural moments in the log)
+5. **Recommended Next Actions** (2-3 specific TPM actions to wrap up or publicise the project)
+
+Keep it under 300 words. Write for a senior engineering or product leader."""
+
+            if st.button("Generate Executive Briefing", key="d14_brief", type="primary"):
+                with st.spinner("Claude is reading your commit history..."):
+                    import anthropic, time as _time
+                    client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+                    t0 = _time.time()
+                    resp = client.messages.create(
+                        model=MODEL,
+                        max_tokens=1024,
+                        messages=[{"role": "user", "content": briefing_prompt}],
+                    )
+                    latency = round(_time.time() - t0, 2)
+                    briefing_text = resp.content[0].text
+                    st.session_state["d14_briefing"] = briefing_text
+                    st.session_state["d14_brief_tokens"] = resp.usage.input_tokens + resp.usage.output_tokens
+                    st.session_state["d14_brief_latency"] = latency
+
+            briefing = st.session_state.get("d14_briefing")
+            if briefing:
+                st.markdown(briefing)
+                st.caption(
+                    f"Tokens: {st.session_state.get('d14_brief_tokens', 0)} · "
+                    f"Latency: {st.session_state.get('d14_brief_latency', 0)}s · "
+                    f"Model: {MODEL}"
+                )
+
+with d14_tab3:
+    st.subheader("MCP Servers — Claude Desktop Config")
+    st.markdown(
+        "Add both MCP servers to Claude Desktop so Claude can access your TPM data "
+        "**and** your GitHub repo in the same conversation."
+    )
+
+    python_path = os.path.normpath(os.path.join(os.path.dirname(__file__), "../../venv/bin/python"))
+    server_abs  = os.path.normpath(os.path.join(os.path.dirname(__file__), "../../mcp_servers/tpm_copilot_mcp/server.py"))
+    gh_tok      = os.environ.get("GITHUB_TOKEN", "<your-github-token>")
+
+    combined_config = json.dumps({
+        "mcpServers": {
+            "tpm-copilot": {
+                "command": python_path,
+                "args": [server_abs]
+            },
+            "github": {
+                "command": "npx",
+                "args": ["-y", "@modelcontextprotocol/server-github"],
+                "env": {
+                    "GITHUB_PERSONAL_ACCESS_TOKEN": gh_tok
+                }
+            }
+        }
+    }, indent=2)
+
+    st.code(combined_config, language="json")
+    st.caption("Config location: `~/Library/Application Support/Claude/claude_desktop_config.json`")
+
+    st.markdown("**With both servers connected, Claude Desktop can:**")
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown("""
+**TPM Copilot MCP**
+- Read your launch checklist
+- Read your risk register
+- Read your capacity plan
+- Analyze launch risk
+- Generate status reports
+- Create escalation docs
+""")
+    with col2:
+        st.markdown("""
+**GitHub MCP**
+- Read issues and PRs
+- Search code
+- Read file contents
+- List commits
+- Create issues
+- Comment on PRs
+""")
+
+# ── Challenge Complete ────────────────────────────────────────────────────────
+
+st.markdown("---")
+st.markdown("""
+<div style="text-align:center; padding: 40px 0 20px;">
+  <div style="font-size:48px; font-weight:900; letter-spacing:-2px; color:#e4e4e7;">
+    14 / 14
+  </div>
+  <div style="font-size:14px; color:#52525b; margin-top:8px; letter-spacing:0.05em; text-transform:uppercase;">
+    Challenge Complete
+  </div>
+  <div style="margin: 16px auto; width:400px; height:4px; background:#1e1e2e; border-radius:99px; overflow:hidden;">
+    <div style="height:100%; width:100%; background:linear-gradient(90deg,#3b82f6,#f59e0b,#22c55e); border-radius:99px;"></div>
+  </div>
+  <div style="font-size:12px; color:#3f3f46; margin-top:8px;">
+    From blank repo → multi-agent AI TPM Copilot in 14 days
+  </div>
+</div>
+""", unsafe_allow_html=True)
+
+c1, c2, c3, c4 = st.columns(4)
+c1.metric("Days Shipped", "14 / 14")
+c2.metric("Claude Calls", "Days 9–14")
+c3.metric("MCP Servers", "2")
+c4.metric("Agents Built", "5")
