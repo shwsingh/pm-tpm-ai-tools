@@ -50,52 +50,80 @@ A formatted report with these sections:
 
 ## Evaluation Rules
 
-A status report is scored across five quality dimensions. Each is pass/fail today;
-Day 11 will add numeric scoring via DeepEval.
-
-### 1. Completeness
+### Prerequisite Gate (not scored, but required)
 All six input fields are present and non-empty (or explicitly "None" for optional fields).
-All seven output sections are present in the report.
+All seven output sections are present in the report. A report missing any field or section
+is returned for completion before scoring begins.
 
-- ✅ Pass — all sections present, no section is blank or missing
-- ❌ Fail — any section is empty, skipped, or filled with placeholder text
+### Scored Dimensions
 
-### 2. Ask Specificity
-Every ask names **what** is needed, **who** should act, and **by when** if time-sensitive.
-Vague asks ("need help", "leadership should look at this") fail.
+A status report is scored across five quality dimensions. Each is pass/fail.
+A report is **Exec-Ready** only when all five pass.
 
-- ✅ Pass — each ask is actionable: verb + owner + deadline or decision point
-- ❌ Fail — any ask is vague, passive, or missing an owner
+---
 
-### 3. Status Accuracy
-The status color must match the actual severity of blockers and risks described.
-A Green status with active blockers is always wrong. A Red with no blockers is always wrong.
+### 1. Ask Specificity
+Every ask makes clear what leadership needs to do, who specifically should do it, and
+by when. Vague asks waste exec time and get ignored.
 
-- ✅ Pass — color is consistent with the blocker/risk content
-- ❌ Fail — color contradicts the content (e.g. Green + active blocker, Red + nothing wrong)
+- ✅ Pass — each ask is: verb + named owner + decision point or deadline
+- ❌ Fail — any ask uses passive language ("need alignment", "leadership should review"),
+  is missing an owner, or doesn't distinguish what the TPM is handling vs what needs a decision
 
-### 4. Clarity
-The report contains no internal jargon, acronyms without expansion, or sentences that
-require context to understand. A new VP joining the team should be able to read it
-cold in under 60 seconds.
+---
 
-- ✅ Pass — plain language, no unexplained shorthand, readable in under 60 seconds
-- ❌ Fail — jargon present, acronyms unexplained, or summary requires prior context
+### 2. Status Accuracy
+The status color must reflect the actual content — not the author's optimism.
+Green means genuinely on track: no blockers, no risks that could move the timeline.
+Yellow means something is at risk: a dependency slipping, a review pending, a blocker that
+has a workaround but hasn't been resolved. Red means something is actively broken with no
+current mitigation.
 
-### 5. Next Week Concreteness
-Next week items are deliverables with a completion signal — not activities.
-"Complete auth integration and ship to staging" passes. "Continue working on auth" fails.
+- ✅ Pass — color matches the severity of blockers and risks described in the content
+- ❌ Fail — Green with any active blocker; Red with no concrete problem named;
+  Yellow when a hard blocker exists with no mitigation (should be Red)
 
-- ✅ Pass — each next-week item names a deliverable and implies a done state
-- ❌ Fail — any item uses "continue", "work on", or "progress" without a completion signal
+---
+
+### 3. Impact Clarity
+Every blocker and risk must name the downstream consequence — what breaks, slips, or
+gets blocked if this is not resolved. Reporting a fact without its impact leaves leadership
+unable to prioritize.
+
+- ✅ Pass — each blocker/risk connects to a consequence: "X is blocked → Y launch slips",
+  "Risk: API latency → checkout conversion drops on launch day"
+- ❌ Fail — any blocker or risk is reported as a standalone fact with no downstream impact
+  stated ("Auth integration is delayed", "API performance is a concern")
+
+---
+
+### 4. Next Week Concreteness
+Next week items are deliverables with a completion signal — not ongoing activities.
+A done state must be implied or explicit.
+
+- ✅ Pass — each item names what will be delivered and what "done" looks like:
+  "Complete auth integration and ship to staging by Friday"
+- ❌ Fail — any item uses activity language: "continue working on", "make progress on",
+  "look into", "investigate" — these describe effort, not outcomes
+
+---
+
+### 5. Exec Readability
+A new VP joining the team must be able to read this report cold and know what is happening,
+what is at risk, and what they are being asked to do — without follow-up questions.
+
+- ✅ Pass — no unexplained acronyms, no team-internal jargon, no sentences that require
+  prior context; the one-line summary alone communicates the week's status
+- ❌ Fail — any acronym used without expansion on first use; jargon that assumes the reader
+  knows the team's internal names, tools, or history
 
 ---
 
 ## Exec-Ready Bar
 
-A report is **Exec-Ready** when all five eval dimensions pass.
-A report is **Not Exec-Ready** when any dimension fails — the failing dimension is surfaced
-so the TPM knows exactly what to fix before sending.
+A report is **Exec-Ready** when all five scored dimensions pass.
+A report is **Not Exec-Ready** when any dimension fails — the failing dimension and the
+specific reason are surfaced so the TPM knows exactly what to fix before sending.
 
 ---
 
