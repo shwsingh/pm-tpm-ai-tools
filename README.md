@@ -62,54 +62,69 @@ streamlit run projects/tpm_pm_toolkit/app.py
 <summary>Day 14 — layered architecture</summary>
 
 ```mermaid
-flowchart TB
+flowchart LR
     User(["👤 TPM / PM"]):::user
 
-    subgraph UI["🖥️  Interface Layer — Streamlit app, one section per day"]
-        LRA["Launch Risk Analyzer"]
-        BTA["Bug Triage Agent"]
-        WF["3-Stage Pipeline"]
-        SR["Status Report"]
-        KB["Knowledge Base"]
-        FA["Feedback Agent"]
-        DA["Dependency Agent"]
-        EV["Eval Framework"]
-        ORC["Multi-Agent Orchestrator"]
-    end
+    %% ── Layer labels (left column) ──────────────────────────────
+    L1["🖥️ Interface\nLayer"]:::lbl
+    L2["🔀 Orchestration\nLayer"]:::lbl
+    L3["⚙️ Infrastructure\nLayer"]:::lbl
+    L4["🧠 LLM\nLayer"]:::lbl
+    L5["💾 Data\nLayer"]:::lbl
+    L6["🔌 Protocol\nLayer"]:::lbl
 
-    subgraph ORCH["🔀  Orchestration Layer — routing, loops, pipelines"]
-        LOOP["Agent Loop\ntool_use → execute → loop"]
-        PIPE["3-Stage Pipeline\nIngest → Triage → Escalation"]
-    end
+    %% ── Interface ───────────────────────────────────────────────
+    LRA["Launch Risk\nAnalyzer"]:::iface
+    BTA["Bug Triage\nAgent"]:::iface
+    SR["Status\nReport"]:::iface
+    KB["Knowledge\nBase"]:::iface
+    FA["Feedback\nAgent"]:::iface
+    DA["Dependency\nAgent"]:::iface
+    EV["Eval\nFramework"]:::iface
+    ORC["Multi-Agent\nOrchestrator"]:::iface
 
-    subgraph INFRA["⚙️  Infrastructure Layer — cross-cutting concerns"]
-        HARNESS["AgentHarness\nretry · JSON parse · token logging · skill contract"]
-        EVAL["Claude-as-Judge\nscores outputs against skill spec rules"]
-    end
+    %% ── Orchestration ───────────────────────────────────────────
+    LOOP["Agent Loop\ntool_use → execute → loop"]:::orch
+    PIPE["3-Stage Pipeline\nIngest → Triage → Escalation"]:::orch
 
-    subgraph LLM_LAYER["🧠  LLM Layer — all model calls"]
-        CLAUDE[("Claude API\nclaude-sonnet-4-6")]
-    end
+    %% ── Infrastructure ──────────────────────────────────────────
+    HARNESS["AgentHarness\nretry · token log · skill contract"]:::infra
+    JUDGE["Claude-as-Judge\nscores output per skill spec"]:::infra
 
-    subgraph DATA["💾  Data Layer — state and retrieval"]
-        SS[("Session State\npipeline stage outputs")]
-        CHUNKS[("Doc Chunks\nkeyword search index")]
-        DEPS[("Dependency Graph\ncross-team deps")]
-        TOKLOG[("Token Log\ncumulative cost")]
-    end
+    %% ── LLM ─────────────────────────────────────────────────────
+    CLAUDE[("Claude API\nclaude-sonnet-4-6")]:::llm
 
-    subgraph PROTOCOL["🔌  Protocol Layer — external connectivity"]
-        MCP["MCP Server\nResources · Tools · Prompts"]
-        GHAPI[("GitHub API\nlive commits + repo stats")]
-    end
+    %% ── Data ────────────────────────────────────────────────────
+    SS[("Session State")]:::data
+    CHUNKS[("Doc Chunks")]:::data
+    DEPS[("Dep Graph")]:::data
+    TOKLOG[("Token Log")]:::data
 
-    User --> UI
+    %% ── Protocol ────────────────────────────────────────────────
+    MCP["MCP Server\nResources · Tools · Prompts"]:::proto
+    GHAPI[("GitHub API")]:::proto
 
-    BTA & FA & DA & EV --> ORCH
-    ORC --> ORCH
+    %% ── Label pointers ──────────────────────────────────────────
+    L1 -.-> LRA & BTA & SR & KB & FA & DA & EV & ORC
+    L2 -.-> LOOP & PIPE
+    L3 -.-> HARNESS & JUDGE
+    L4 -.-> CLAUDE
+    L5 -.-> SS & CHUNKS & DEPS & TOKLOG
+    L6 -.-> MCP & GHAPI
 
-    ORCH --> INFRA
-    INFRA --> LLM_LAYER
+    %% ── Data flow ───────────────────────────────────────────────
+    User --> LRA & BTA & SR & KB & FA & DA & EV & ORC
+    BTA & FA & DA & EV & ORC --> LOOP
+    ORC --> PIPE
+    LOOP & PIPE --> HARNESS
+    HARNESS --> CLAUDE
+    HARNESS --> JUDGE
+    PIPE --> SS
+    KB --> CHUNKS
+    DA --> DEPS
+    HARNESS --> TOKLOG
+    MCP --> CLAUDE
+    ORC --> GHAPI
 
     WF --> PIPE --> SS
     KB --> CHUNKS
@@ -119,7 +134,14 @@ flowchart TB
     MCP --> LLM_LAYER
     ORC --> GHAPI
 
-    classDef user fill:#0f172a,stroke:#60a5fa,color:#f8fafc,font-weight:bold
+    classDef lbl   fill:#1e1e2e,stroke:#3f3f46,color:#a1a1aa,font-weight:700,font-size:11px
+    classDef user  fill:#0f172a,stroke:#60a5fa,color:#f8fafc,font-weight:bold
+    classDef iface fill:#78350f,stroke:#fcd34d,color:#fef9c3,font-weight:600
+    classDef orch  fill:#14532d,stroke:#86efac,color:#dcfce7,font-weight:600
+    classDef infra fill:#1e3a5f,stroke:#93c5fd,color:#dbeafe,font-weight:600
+    classDef llm   fill:#4c1d95,stroke:#c4b5fd,color:#f5f3ff,font-weight:700
+    classDef data  fill:#1c1917,stroke:#a8a29e,color:#d6d3d1
+    classDef proto fill:#1a1a2e,stroke:#a855f7,color:#e9d5ff,font-weight:600
 ```
 
 **Layers explained:**
