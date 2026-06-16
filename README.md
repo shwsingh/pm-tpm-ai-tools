@@ -81,23 +81,25 @@ streamlit run projects/tpm_pm_toolkit/app.py
 
 ### Build timeline
 
-```mermaid
-timeline
-    title 14-Day Build Progress
-    Day 0  : Repo + 14-day plan
-    Day 1  : Streamlit homepage
-    Day 2  : Launch Risk Analyzer (heuristic)
-    Day 3  : First skill spec - launch_risk_analysis
-    Day 4  : PRD Builder skill + worked example + critique loop
-    Day 5  : Bug Triage Agent (first agent) + design decisions
-    Day 6  : Agent Workflow - 3-stage pipeline (Ingest → Triage → Escalation)
-    Day 7  : Status Report Skill - exec report generator with 5-dimension quality eval
-    Day 8  : Knowledge Base - upload and keyword search over txt, md, docx, csv
-    Day 9  : Feedback Agent + Claude-powered bug triage (first LLM calls)
-    Day 10 : Dependency Agent - critical path + cascading risk reasoning
-    Day 11 : Agent Harness (all Claude calls unified) + Evaluation Framework (Claude-as-judge)
-    Day 12 : Multi-Agent System - orchestrator loop with 4 tools + exec synthesis
-```
+**[View interactive timeline →](https://shwsingh.github.io/pm-tpm-ai-tools/timeline_gitbranch.html)**
+
+| Day | Capability | Phase |
+|-----|-----------|-------|
+| 0 | Repo + 14-day plan | Foundation |
+| 1 | TPM Dashboard Homepage | Foundation |
+| 2 | Launch Risk Analyzer | Foundation |
+| 3 | First Skill Spec | Foundation |
+| 4 | PRD Builder Skill | Foundation |
+| 5 | Bug Triage Agent + Blog Launch | Skills & Agents |
+| 6 | 3-Stage Pipeline | Skills & Agents |
+| 7 | Status Report Skill | Skills & Agents |
+| 8 | Knowledge Base | Skills & Agents |
+| 9 | Feedback Agent + First Claude Calls | LLM & Orchestration |
+| 10 | Dependency Agent | LLM & Orchestration |
+| 11 | AgentHarness + Eval Framework | LLM & Orchestration |
+| 12 | Multi-Agent Orchestrator | LLM & Orchestration |
+| 13 | MCP Server Integration *(coming)* | LLM & Orchestration |
+| 14 | Executive TPM Copilot *(coming)* | LLM & Orchestration |
 
 ### Current architecture (Day 12)
 
