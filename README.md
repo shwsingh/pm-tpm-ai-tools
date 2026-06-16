@@ -59,41 +59,79 @@ streamlit run projects/tpm_pm_toolkit/app.py
 ## Architecture
 
 <details>
-<summary>Day 14 — full component diagram</summary>
+<summary>Day 14 — layered architecture</summary>
 
 ```mermaid
-flowchart LR
-    User(["TPM / PM"]):::user
+flowchart TB
+    User(["👤 TPM / PM"]):::user
 
-    LRA["Launch Risk\nAnalyzer"]:::ui
-    D5["Bug Triage\nAgent"]:::ui
-    WF["Agent\nWorkflow"]:::ui
-    SR["Status\nReport"]:::ui
-    KB["Knowledge\nBase"]:::ui
-    FA["Feedback\nAgent"]:::ui
-    DA["Dependency\nAgent"]:::ui
-    EV["Eval\nFramework"]:::ui
-    ORC["Orchestrator"]:::ui
-    MCP["MCP Server\n(Day 13)"]:::ui
+    subgraph UI["🖥️  Interface Layer — Streamlit app, one section per day"]
+        LRA["Launch Risk Analyzer"]
+        BTA["Bug Triage Agent"]
+        WF["3-Stage Pipeline"]
+        SR["Status Report"]
+        KB["Knowledge Base"]
+        FA["Feedback Agent"]
+        DA["Dependency Agent"]
+        EV["Eval Framework"]
+        ORC["Multi-Agent Orchestrator"]
+    end
 
-    HARNESS["AgentHarness\nretry · tokens · logging"]:::agent
-    LOOP["Agent Loop\ntool_use → execute → loop"]:::agent
+    subgraph ORCH["🔀  Orchestration Layer — routing, loops, pipelines"]
+        LOOP["Agent Loop\ntool_use → execute → loop"]
+        PIPE["3-Stage Pipeline\nIngest → Triage → Escalation"]
+    end
 
-    CLAUDE[("Claude API\nclaude-sonnet-4-6")]:::llm
-    GH[("GitHub API\nlive commits")]:::llm
+    subgraph INFRA["⚙️  Infrastructure Layer — cross-cutting concerns"]
+        HARNESS["AgentHarness\nretry · JSON parse · token logging · skill contract"]
+        EVAL["Claude-as-Judge\nscores outputs against skill spec rules"]
+    end
 
-    User --> LRA & D5 & WF & SR & KB & FA & DA & EV & ORC & MCP
-    D5 & WF & FA & DA & EV --> HARNESS
-    ORC --> LOOP --> HARNESS
-    HARNESS --> CLAUDE
-    MCP --> CLAUDE
-    ORC --> GH
+    subgraph LLM_LAYER["🧠  LLM Layer — all model calls"]
+        CLAUDE[("Claude API\nclaude-sonnet-4-6")]
+    end
 
-    classDef user  fill:#1e293b,stroke:#60a5fa,color:#f8fafc,font-weight:bold
-    classDef ui    fill:#a16207,stroke:#fde68a,color:#fffbeb,font-weight:bold
-    classDef agent fill:#166534,stroke:#86efac,color:#f0fdf4,font-weight:bold
-    classDef llm   fill:#7c3aed,stroke:#c4b5fd,color:#f5f3ff,font-weight:bold
+    subgraph DATA["💾  Data Layer — state and retrieval"]
+        SS[("Session State\npipeline stage outputs")]
+        CHUNKS[("Doc Chunks\nkeyword search index")]
+        DEPS[("Dependency Graph\ncross-team deps")]
+        TOKLOG[("Token Log\ncumulative cost")]
+    end
+
+    subgraph PROTOCOL["🔌  Protocol Layer — external connectivity"]
+        MCP["MCP Server\nResources · Tools · Prompts"]
+        GHAPI[("GitHub API\nlive commits + repo stats")]
+    end
+
+    User --> UI
+
+    BTA & FA & DA & EV --> ORCH
+    ORC --> ORCH
+
+    ORCH --> INFRA
+    INFRA --> LLM_LAYER
+
+    WF --> PIPE --> SS
+    KB --> CHUNKS
+    DA --> DEPS
+    HARNESS --> TOKLOG
+
+    MCP --> LLM_LAYER
+    ORC --> GHAPI
+
+    classDef user fill:#0f172a,stroke:#60a5fa,color:#f8fafc,font-weight:bold
 ```
+
+**Layers explained:**
+
+| Layer | Role | Key components |
+|-------|------|---------------|
+| Interface | What the user sees and types into | 9 Streamlit sections, one per capability |
+| Orchestration | How work gets routed and sequenced | Agent loop (Claude decides), 3-stage pipeline (code decides) |
+| Infrastructure | Cross-cutting: reliability, cost, eval | AgentHarness (retry, token log), Claude-as-judge |
+| LLM | All model calls, one place | Claude API via AgentHarness |
+| Data | Persistence within a session | Session state, doc chunks, dep graph, token log |
+| Protocol | External systems | MCP server (Claude Desktop), GitHub API (live data) |
 
 → [Full component reference](https://shwsingh.github.io/pm-tpm-ai-tools/components.html)
 
