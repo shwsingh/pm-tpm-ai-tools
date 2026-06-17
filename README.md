@@ -44,6 +44,41 @@ AI is bad at judgment. It doesn't know your org, your stakeholders, or the histo
 
 > These are directional estimates based on real TPM workflows — not benchmarked. Your mileage will vary based on program complexity and how much you trust the first draft.
 
+### Why these tasks, not others
+
+Not every TPM task is equally AI-ready. Tasks were selected against four criteria:
+
+| Criteria | What it means |
+|----------|--------------|
+| **High frequency** | Happens weekly — leverage compounds over time |
+| **Structured I/O** | Clear inputs, predictable output format — writable as a skill spec |
+| **Pattern-heavy** | Follows rules AI can apply consistently, not deep org-specific context |
+| **Data pasteable today** | Inputs can be provided without live system integrations |
+
+Tasks that scored well on all four got built first:
+
+| Task | Weekly | Structured I/O | Pattern-heavy | Data pasteable |
+|------|--------|---------------|---------------|----------------|
+| Status Reports | ✅ | ✅ | ✅ | ✅ |
+| Bug Triage | ✅ | ✅ | ✅ | ✅ |
+| Launch Readiness | ✅ | ✅ | ✅ | ✅ |
+| Escalations | ✅ | ✅ | ✅ | ✅ |
+| Customer Feedback | ✅ | ✅ | ✅ | ✅ |
+| Dependency Tracking | ✅ | ✅ | ✅ | ✅ |
+| Exec Briefings | ✅ | ✅ | ✅ | ✅ (via GitHub) |
+
+Tasks that didn't make the cut — and why:
+
+| Task | Why not prioritized |
+|------|-------------------|
+| **Program Reviews** | Output is typically a deck or slide narrative — harder format to generate as structured text. Coming soon. |
+| OKR Updates | Quarterly cadence, low weekly leverage |
+| Meeting Notes | Already solved well by Otter.ai, Notion AI, Fireflies |
+| Roadmap Updates | Low structure, high judgment — no clear I/O contract |
+| Post-mortems | Multi-person collaborative process, not a single-user production task |
+| Capacity Planning | Requires financial and headcount data not easily accessible |
+| Oncall Handoffs | Highly team-specific, better handled by on-call tooling |
+
 ---
 
 ## What this is
