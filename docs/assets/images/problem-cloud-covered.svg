@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" width="900" height="420">
+  <rect width="900" height="420" fill="#0f172a" rx="12"/>
+
+  <!-- Highlight pills behind covered items -->
+  <rect x="132" y="38"  width="278" height="56"  rx="8" fill="#14532d" opacity="0.6"/>
+  <rect x="62"  y="106" width="148" height="44"  rx="8" fill="#14532d" opacity="0.6"/>
+  <rect x="330" y="116" width="202" height="40"  rx="8" fill="#14532d" opacity="0.6"/>
+  <rect x="678" y="109" width="166" height="42"  rx="8" fill="#14532d" opacity="0.6"/>
+  <rect x="42"  y="166" width="136" height="34"  rx="8" fill="#14532d" opacity="0.6"/>
+  <rect x="238" y="166" width="238" height="36"  rx="8" fill="#14532d" opacity="0.6"/>
+  <rect x="584" y="163" width="172" height="34"  rx="8" fill="#14532d" opacity="0.6"/>
+  <rect x="298" y="213" width="206" height="36"  rx="8" fill="#14532d" opacity="0.6"/>
+  <rect x="578" y="212" width="192" height="32"  rx="8" fill="#14532d" opacity="0.6"/>
+  <rect x="408" y="254" width="168" height="30"  rx="8" fill="#14532d" opacity="0.6"/>
+
+  <!-- NOT covered — grayed out -->
+  <text x="680" y="85"  text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="38" font-weight="700" fill="#4b5563" opacity="0.5">Program Reviews</text>
+  <text x="820" y="185" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="20" font-weight="600" fill="#4b5563" opacity="0.5">OKR Updates</text>
+  <text x="148" y="232" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="22" font-weight="600" fill="#4b5563" opacity="0.5">Meeting Notes</text>
+  <text x="88"  y="273" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="19" font-weight="500" fill="#4b5563" opacity="0.5">Post-mortems</text>
+  <text x="278" y="278" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="19" font-weight="500" fill="#4b5563" opacity="0.5">Roadmap Updates</text>
+  <text x="700" y="270" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="17" font-weight="500" fill="#4b5563" opacity="0.5">Action Items</text>
+  <text x="840" y="268" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="16" font-weight="500" fill="#4b5563" opacity="0.5">P0 Bridges</text>
+  <text x="110" y="310" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="16" font-weight="500" fill="#4b5563" opacity="0.5">Stakeholder Alignment</text>
+  <text x="295" y="313" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="15" font-weight="500" fill="#4b5563" opacity="0.5">Decision Logs</text>
+  <text x="455" y="310" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="16" font-weight="500" fill="#4b5563" opacity="0.5">Capacity Planning</text>
+  <text x="625" y="312" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="15" font-weight="500" fill="#4b5563" opacity="0.5">Sprint Reviews</text>
+  <text x="775" y="308" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="14" font-weight="500" fill="#4b5563" opacity="0.5">Oncall Handoffs</text>
+  <text x="80"  y="343" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="400" fill="#4b5563" opacity="0.5">Design Doc Reviews</text>
+  <text x="245" y="346" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="400" fill="#4b5563" opacity="0.5">Vendor Reviews</text>
+  <text x="400" y="343" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="400" fill="#4b5563" opacity="0.5">Launch Announcements</text>
+  <text x="568" y="345" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="400" fill="#4b5563" opacity="0.5">Headcount Justification</text>
+  <text x="730" y="342" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="400" fill="#4b5563" opacity="0.5">Interview Loops</text>
+  <text x="845" y="345" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="400" fill="#4b5563" opacity="0.5">RCAs</text>
+
+  <!-- COVERED — green highlight -->
+  <text x="270" y="78"  text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="52" font-weight="700" fill="#4ade80">Status Reports</text>
+  <text x="135" y="140" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="34" font-weight="700" fill="#4ade80">Bug Triage</text>
+  <text x="430" y="145" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="30" font-weight="700" fill="#4ade80">Launch Readiness</text>
+  <text x="760" y="138" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="32" font-weight="700" fill="#4ade80">Escalations</text>
+  <text x="108" y="188" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="24" font-weight="600" fill="#4ade80">Exec Briefings</text>
+  <text x="355" y="192" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="27" font-weight="600" fill="#4ade80">Dependency Tracking</text>
+  <text x="672" y="188" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="23" font-weight="600" fill="#4ade80">Customer Feedback</text>
+  <text x="400" y="238" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="25" font-weight="600" fill="#4ade80">Milestone Tracking</text>
+  <text x="672" y="232" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="21" font-weight="600" fill="#4ade80">Risk Registers</text>
+  <text x="490" y="272" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="18" font-weight="500" fill="#4ade80">Go / No-Go Reviews</text>
+
+  <!-- Legend -->
+  <rect x="220" y="378" width="16" height="16" rx="3" fill="#4ade80"/>
+  <text x="242" y="391" font-family="Inter, system-ui, sans-serif" font-size="13" fill="#d1d5db">Covered by this copilot</text>
+  <rect x="460" y="378" width="16" height="16" rx="3" fill="#4b5563"/>
+  <text x="482" y="391" font-family="Inter, system-ui, sans-serif" font-size="13" fill="#6b7280">Not yet covered — gaps and future scope</text>
+</svg>

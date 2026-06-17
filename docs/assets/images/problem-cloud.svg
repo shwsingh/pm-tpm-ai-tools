@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 400" width="900" height="400">
+  <rect width="900" height="400" fill="#0f172a" rx="12"/>
+
+  <!-- XL — highest frequency / most time -->
+  <text x="270" y="78" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="52" font-weight="700" fill="#fcd34d" opacity="0.95">Status Reports</text>
+  <text x="680" y="85" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="38" font-weight="700" fill="#fb923c" opacity="0.92">Program Reviews</text>
+
+  <!-- Large -->
+  <text x="135" y="140" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="34" font-weight="700" fill="#f87171" opacity="0.90">Bug Triage</text>
+  <text x="430" y="145" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="30" font-weight="700" fill="#fbbf24" opacity="0.88">Launch Readiness</text>
+  <text x="760" y="138" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="32" font-weight="700" fill="#fca5a5" opacity="0.88">Escalations</text>
+
+  <!-- Medium-large -->
+  <text x="108" y="188" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="24" font-weight="600" fill="#fdba74" opacity="0.85">Exec Briefings</text>
+  <text x="355" y="192" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="27" font-weight="600" fill="#fb923c" opacity="0.85">Dependency Tracking</text>
+  <text x="610" y="188" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="23" font-weight="600" fill="#fcd34d" opacity="0.82">Risk Registers</text>
+  <text x="820" y="185" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="20" font-weight="600" fill="#fbbf24" opacity="0.80">OKR Updates</text>
+
+  <!-- Medium -->
+  <text x="148" y="232" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="22" font-weight="600" fill="#fca5a5" opacity="0.80">Meeting Notes</text>
+  <text x="400" y="238" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="25" font-weight="600" fill="#f87171" opacity="0.82">Milestone Tracking</text>
+  <text x="672" y="232" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="21" font-weight="600" fill="#fdba74" opacity="0.80">Customer Feedback</text>
+
+  <!-- Medium-small -->
+  <text x="88" y="273" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="19" font-weight="500" fill="#fbbf24" opacity="0.75">Post-mortems</text>
+  <text x="278" y="278" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="19" font-weight="500" fill="#fb923c" opacity="0.75">Roadmap Updates</text>
+  <text x="490" y="272" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="18" font-weight="500" fill="#fcd34d" opacity="0.75">Go / No-Go Reviews</text>
+  <text x="700" y="270" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="17" font-weight="500" fill="#fca5a5" opacity="0.75">Action Items</text>
+  <text x="840" y="268" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="16" font-weight="500" fill="#fdba74" opacity="0.70">P0 Bridges</text>
+
+  <!-- Small -->
+  <text x="110" y="310" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="16" font-weight="500" fill="#fb923c" opacity="0.68">Stakeholder Alignment</text>
+  <text x="295" y="313" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="15" font-weight="500" fill="#fbbf24" opacity="0.68">Decision Logs</text>
+  <text x="455" y="310" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="16" font-weight="500" fill="#f87171" opacity="0.68">Capacity Planning</text>
+  <text x="625" y="312" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="15" font-weight="500" fill="#fcd34d" opacity="0.65">Sprint Reviews</text>
+  <text x="775" y="308" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="14" font-weight="500" fill="#fca5a5" opacity="0.65">Oncall Handoffs</text>
+
+  <!-- XS -->
+  <text x="80" y="343" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="400" fill="#fdba74" opacity="0.60">Design Doc Reviews</text>
+  <text x="245" y="346" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="400" fill="#fb923c" opacity="0.60">Vendor Reviews</text>
+  <text x="400" y="343" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="400" fill="#fbbf24" opacity="0.58">Launch Announcements</text>
+  <text x="568" y="345" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="400" fill="#fcd34d" opacity="0.58">Headcount Justification</text>
+  <text x="730" y="342" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="400" fill="#f87171" opacity="0.58">Interview Loops</text>
+  <text x="845" y="345" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="400" fill="#fca5a5" opacity="0.55">RCAs</text>
+</svg>
