@@ -62,58 +62,50 @@ streamlit run projects/tpm_pm_toolkit/app.py
 <summary>Day 14 — layered architecture</summary>
 
 ```mermaid
-flowchart LR
+flowchart TD
     User(["👤 TPM / PM"]):::user
 
-    %% ── Layer labels (left column) ──────────────────────────────
-    L1["🖥️ Interface\nLayer"]:::lbl
-    L2["🔀 Orchestration\nLayer"]:::lbl
-    L3["⚙️ Infrastructure\nLayer"]:::lbl
-    L4["🧠 LLM\nLayer"]:::lbl
-    L5["💾 Data\nLayer"]:::lbl
-    L6["🔌 Protocol\nLayer"]:::lbl
+    subgraph Interface["🖥️ Interface Layer"]
+        direction LR
+        LRA["Launch Risk\nAnalyzer"]:::iface
+        BTA["Bug Triage\nAgent"]:::iface
+        SR["Status\nReport"]:::iface
+        KB["Knowledge\nBase"]:::iface
+        FA["Feedback\nAgent"]:::iface
+        DA["Dependency\nAgent"]:::iface
+        EV["Eval\nFramework"]:::iface
+        ORC["Multi-Agent\nOrchestrator"]:::iface
+    end
 
-    %% ── Interface ───────────────────────────────────────────────
-    LRA["Launch Risk\nAnalyzer"]:::iface
-    BTA["Bug Triage\nAgent"]:::iface
-    SR["Status\nReport"]:::iface
-    KB["Knowledge\nBase"]:::iface
-    FA["Feedback\nAgent"]:::iface
-    DA["Dependency\nAgent"]:::iface
-    EV["Eval\nFramework"]:::iface
-    ORC["Multi-Agent\nOrchestrator"]:::iface
+    subgraph Orchestration["🔀 Orchestration Layer"]
+        direction LR
+        LOOP["Agent Loop\ntool_use → execute → loop"]:::orch
+        PIPE["3-Stage Pipeline\nIngest → Triage → Escalation"]:::orch
+    end
 
-    %% ── Orchestration ───────────────────────────────────────────
-    LOOP["Agent Loop\ntool_use → execute → loop"]:::orch
-    PIPE["3-Stage Pipeline\nIngest → Triage → Escalation"]:::orch
+    subgraph Infra["⚙️ Infrastructure Layer"]
+        direction LR
+        HARNESS["AgentHarness\nretry · token log · skill contract"]:::infra
+        JUDGE["Claude-as-Judge"]:::infra
+    end
 
-    %% ── Infrastructure ──────────────────────────────────────────
-    HARNESS["AgentHarness\nretry · token log · skill contract"]:::infra
-    JUDGE["Claude-as-Judge\nscores output per skill spec"]:::infra
+    CLAUDE[("🧠 Claude API\nclaude-sonnet-4-6")]:::llm
 
-    %% ── LLM ─────────────────────────────────────────────────────
-    CLAUDE[("Claude API\nclaude-sonnet-4-6")]:::llm
+    subgraph Data["💾 Data Layer"]
+        direction LR
+        SS[("Session\nState")]:::data
+        CHUNKS[("Doc\nChunks")]:::data
+        DEPS[("Dep\nGraph")]:::data
+        TOKLOG[("Token\nLog")]:::data
+    end
 
-    %% ── Data ────────────────────────────────────────────────────
-    SS[("Session State")]:::data
-    CHUNKS[("Doc Chunks")]:::data
-    DEPS[("Dep Graph")]:::data
-    TOKLOG[("Token Log")]:::data
+    subgraph Protocol["🔌 Protocol Layer"]
+        direction LR
+        MCP["MCP Server\nResources · Tools · Prompts"]:::proto
+        GHAPI[("GitHub API")]:::proto
+    end
 
-    %% ── Protocol ────────────────────────────────────────────────
-    MCP["MCP Server\nResources · Tools · Prompts"]:::proto
-    GHAPI[("GitHub API")]:::proto
-
-    %% ── Label pointers ──────────────────────────────────────────
-    L1 -.-> LRA & BTA & SR & KB & FA & DA & EV & ORC
-    L2 -.-> LOOP & PIPE
-    L3 -.-> HARNESS & JUDGE
-    L4 -.-> CLAUDE
-    L5 -.-> SS & CHUNKS & DEPS & TOKLOG
-    L6 -.-> MCP & GHAPI
-
-    %% ── Data flow ───────────────────────────────────────────────
-    User --> LRA & BTA & SR & KB & FA & DA & EV & ORC
+    User --> Interface
     BTA & FA & DA & EV & ORC --> LOOP
     ORC --> PIPE
     LOOP & PIPE --> HARNESS
@@ -126,15 +118,6 @@ flowchart LR
     MCP --> CLAUDE
     ORC --> GHAPI
 
-    WF --> PIPE --> SS
-    KB --> CHUNKS
-    DA --> DEPS
-    HARNESS --> TOKLOG
-
-    MCP --> LLM_LAYER
-    ORC --> GHAPI
-
-    classDef lbl   fill:#1e1e2e,stroke:#3f3f46,color:#a1a1aa,font-weight:700,font-size:11px
     classDef user  fill:#0f172a,stroke:#60a5fa,color:#f8fafc,font-weight:bold
     classDef iface fill:#78350f,stroke:#fcd34d,color:#fef9c3,font-weight:600
     classDef orch  fill:#14532d,stroke:#86efac,color:#dcfce7,font-weight:600
